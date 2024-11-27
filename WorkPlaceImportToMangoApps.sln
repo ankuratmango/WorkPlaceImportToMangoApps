@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "WorkPlaceImportToMangoApps", "WorkPlaceImportToMangoApps\WorkPlaceImportToMangoApps.pyproj", "{9BAD844D-325E-41D9-B335-7F4B0FC7A88B}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "WorkPlaceToMangoApps", "WorkPlaceImportToMangoApps\WorkPlaceToMangoApps.pyproj", "{9BAD844D-325E-41D9-B335-7F4B0FC7A88B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
