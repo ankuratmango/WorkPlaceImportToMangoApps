@@ -28,9 +28,16 @@
     <Compile Include="main.py" />
     <Compile Include="scim_agent.py" />
     <Compile Include="scim_sdk.py" />
+    <Compile Include="workplace_etl_pipeline_xmlink.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Constants\" />
+    <Folder Include="SampleMangoAppsCSVFiles\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleMangoAppsCSVFiles\group.csv" />
+    <Content Include="SampleMangoAppsCSVFiles\group_member.csv" />
+    <Content Include="SampleMangoAppsCSVFiles\users.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
