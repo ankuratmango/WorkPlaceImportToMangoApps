@@ -11,6 +11,8 @@ SCIM_URL = 'https://scim.workplace.com/'
 access_token = "DQWRLZA29QUVprNDNaZAjk1d3ZAud2xPT0JmWmZAPVmhacXpXQ0daMGhBQ3YwamhhRU03LUxKNTJWbkdTTGlQWU5OLUtaX2RSOUJBdHJSd19nQWRzaTJWeGY4Y2p3QU95ZAkViZAHkwTGlIX3BUWmNkdnktRnNNUXpCSFFiTTllQVlkczdJNzRES1ByT2psN2pHTG55ekpVV1BHaEFlOW9YcjA0U3hpWGM1U0JIYnA5aFBHR3FZAeWZAlRFZAfTzFMdWdJY19jT0xjdG9xeTJVNDhSWUhjYktB" 
 file_name = "all_users_new.csv"
 days = 30;
+csv_data = []
+group_members_data = {}
 
 #https://ankurqa.mangopulse.com/ce/pulse/admin/colleague/invite_colleagues
 
@@ -30,6 +32,7 @@ print(user_data)
 
 fields = ['Firstname', 'Lastname', 'Email', 'EmployeeID', 'Phone', 'Title', 'Enabled']
 csv_data = []
+assign_id = {}
 uniqueNumber = int(time.time() * 1000)
 for item in user_data:
     uniqueNumber = uniqueNumber + 1
@@ -42,6 +45,7 @@ for item in user_data:
         'Title': item.get('title', ''),
         'Enabled': item.get('active', False)
     })
+    assign_id[item.get('id', '')] = uniqueNumber
 
 with open(output_file, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.DictWriter(file, fieldnames=fields)
@@ -76,6 +80,7 @@ if os.path.exists(output_file):
     os.remove(output_file)
     print(f"Existing file '{output_file}' deleted.")
 
+csv_data = []
 fields = [
     'Group Image', 'GroupName', 'Group Id', 'Group External Id', 'State', 'Owner',
     'Permission', 'Modules', 'Show In Navigation', 'Team Admins', 'Automation Trigger',
@@ -85,29 +90,18 @@ fields = [
     'File Guest Member Permission', 'File Non Member Permission', 'Chat - Send IM',
     'Chat - Send Important messages'
 ]
-csv_data = []
 
-
-
-group_members_data = {}
 all_group = workplace_etl_pipeline_xmlink.elt_main(access_token, days);
 print(all_group)
+assign_group_id = {}
 for item in all_group:
     group_id = item['id']  
     members = workplace_etl_pipeline_xmlink.getGroupMembers(access_token, group_id)  
     group_members_data[group_id] = members 
     print(members)
 
-# with open(output_file, "a", encoding="utf-8") as file:
-#     file.write('Group Image, GroupName, Group Id, Group External Id, State, Owner, Permission, Modules, Show In Navigation, Team Admins, Automation Trigger, Automation Rule, Admin Only Post, Admin Poll, Admin Update, Admin Questions,Admin Events, LandingPage, Invite Network Users, Allow Join, Allow Guest User,Categories, Files - Upload Settings, File Network Member Permission,File Guest Member Permission, File Non Member Permission, Chat - Send IM,Chat - Send Important messages, Firstname, Lastname, Email, EmployeeID,Phone, Title, Enabled')
-#     file.write('\n')
-
 for item in all_group:
     uniqueNumber = uniqueNumber + 1
-    # with open(output_file, "a", encoding="utf-8") as file:
-    #     if(getGroupOwner(item['id']) is not None):
-    #         file.write("https://firstconnect.firststudentinc.com/ce/pulse/images/default_images/group-250.png?, \""+item.get('name', '')+", "+str(uniqueNumber)+"\",,"+str(uniqueNumber)+", Active, "+getGroupOwner(item['id'])+", Private, Newsfeed|Member|File|Post|Chat|Pages, Pages|Newsfeed|Member|File|Post|Calendar|Chat|Analytics|Media_gallery|Report|Tracker|Wiki|Idea, "+getGroupAdmins(item['id'])+", 8 Hours, <root><automations><rules><name>Cost Center ID</name><label>Cost Center ID</label><type>SLT</type><criteria>Equal To</criteria><value>23001</value><dimension>true</dimension></rules></automations></root>, TRUE, TRUE, TRUE, TRUE, TRUE, Pages, FALSE, TRUE, TRUE, Locations, Admin only, Viewer, No access, No access, Any Group Member, Domain Admins & Group Admins Only")
-    #         file.write('\n')
     csv_data.append({
         'Group Image': 'https://firstconnect.firststudentinc.com/ce/pulse/images/default_images/group-250.png?',  
         'GroupName':  item.get('name', '') + "," + str(uniqueNumber),#item.get('id', '')
@@ -138,12 +132,7 @@ for item in all_group:
         'Chat - Send IM': 'Any Group Member',  
         'Chat - Send Important messages': 'Domain Admins & Group Admins Only'
     })
-
-# Write data to CSV
-# for line in csv_data:
-#     with open(output_file, "w", encoding="utf-8") as file:
-#         file.write(str(line))
-#         file.write("\n")
+    assign_group_id[item.get('id', '')] = uniqueNumber
 
 with open(output_file, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.DictWriter(file, fieldnames=fields)
@@ -151,3 +140,28 @@ with open(output_file, mode='w', newline='', encoding='utf-8') as file:
     writer.writerows(csv_data)
 
 print(f"Data has been written to {output_file}.")
+
+
+# ------------- IMPORT GROUP MEMBERS --------------
+user_group_mapping = {}
+
+for group_id, user_list in group_members_data.items():
+    for user in user_list:
+        if(user["id"] in assign_id):
+            user_id = assign_id[user["id"]]
+            if user_id not in user_group_mapping:
+                user_group_mapping[user_id] = []
+            user_group_mapping[user_id].append(assign_group_id[group_id])
+
+max_groups = max(len(groups) for groups in user_group_mapping.values())
+headers = ["EmployeeID"] + [f"Grouplevel{i+1}" for i in range(max_groups)]
+
+csv_filename = "C:\\Users\\Ankur\\Downloads\\importdata\\members.csv"
+with open(csv_filename, mode="w", newline="", encoding="utf-8") as csv_file:
+    writer = csv.writer(csv_file)
+    writer.writerow(headers)
+    for user_id, groups in user_group_mapping.items():
+        row = [user_id] + groups + ["" for _ in range(max_groups - len(groups))] 
+        writer.writerow(row)
+
+print(f"CSV file '{csv_filename}' has been created.")
