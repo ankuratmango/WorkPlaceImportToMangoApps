@@ -26,6 +26,7 @@
     <Compile Include="csv_header.py" />
     <Compile Include="export_kl_category.py" />
     <Compile Include="export_user_data.py" />
+    <Compile Include="groups_categories.py" />
     <Compile Include="main.py" />
     <Compile Include="scim_agent.py" />
     <Compile Include="scim_sdk.py" />

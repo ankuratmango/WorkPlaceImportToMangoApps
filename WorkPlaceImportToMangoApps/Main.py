@@ -5,6 +5,7 @@ import scim_agent
 import export_user_data
 import export_kl_category
 import workplace_etl_pipeline_xmlink
+import groups_categories
 import csv
 import time
 import json
@@ -180,7 +181,7 @@ def exportToFile(category_data, cid, cname):
     f.close()
 
 ## START
-all_categories = workplace_etl_pipeline_xmlink.elt_main_categories(access_token, days);
+all_categories = groups_categories.elt_main_categories(access_token, days);
 #category_id = '371425217800259'
 #category_id = '337195997889848'
 for item in all_categories:
