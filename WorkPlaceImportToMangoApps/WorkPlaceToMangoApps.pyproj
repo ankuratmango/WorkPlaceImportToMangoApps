@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="Constants\constants.py" />
     <Compile Include="csv_header.py" />
+    <Compile Include="export_kl_category.py" />
     <Compile Include="export_user_data.py" />
     <Compile Include="main.py" />
     <Compile Include="scim_agent.py" />
