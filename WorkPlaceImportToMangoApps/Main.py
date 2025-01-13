@@ -107,7 +107,7 @@ for item in all_group:
     uniqueNumber = uniqueNumber + 1
     csv_data.append({
         'Group Image': 'https://firstconnect.firststudentinc.com/ce/pulse/images/default_images/group-250.png?',  
-        'GroupName':  item.get('name', '') + "," + str(uniqueNumber),#item.get('id', '')
+        'GroupName':  item.get('name', ''), #+ "," + str(uniqueNumber),#item.get('id', '')
         'Group Id': '',
         'Group External Id': uniqueNumber,#item.get('id', ''),  
         'State': 'Active',
