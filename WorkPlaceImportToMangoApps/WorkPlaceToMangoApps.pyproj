@@ -22,18 +22,24 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="create_groups.py" />
     <Compile Include="Constants\constants.py" />
     <Compile Include="csv_header.py" />
     <Compile Include="export_kl_category.py" />
     <Compile Include="export_user_data.py" />
     <Compile Include="groups_categories.py" />
+    <Compile Include="Helper\auto_delete_group.py" />
     <Compile Include="main.py" />
+    <Compile Include="Helper\mangoapps_rest_client.py" />
+    <Compile Include="Helper\rest_client.py" />
     <Compile Include="scim_agent.py" />
     <Compile Include="scim_sdk.py" />
+    <Compile Include="test.py" />
     <Compile Include="workplace_etl_pipeline_xmlink.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Constants\" />
+    <Folder Include="Helper\" />
     <Folder Include="SampleMangoAppsCSVFiles\" />
   </ItemGroup>
   <ItemGroup>
