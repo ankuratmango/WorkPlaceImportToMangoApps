@@ -13,6 +13,11 @@ class Constants():
     JSON_KEY_NEXT = 'next'
     JSON_KEY_EMAIL = 'email'
 
+    MANGOAPPS_URL = 'https://ankurqa.mangopulse.com/'
+    MANGOAPPS_API_KEY = 'bdc43dc4a8908ae7a2022c3a7873140b03df8dc6'
+    MANGOAPPS_USERNAME = 'admin@ankurqa.com'
+    MANGOAPPS_PASSWORD = 'dGVtcDEyMzQ='
+
 
 
 

@@ -34,7 +34,6 @@
     <Compile Include="Helper\rest_client.py" />
     <Compile Include="scim_agent.py" />
     <Compile Include="scim_sdk.py" />
-    <Compile Include="test.py" />
     <Compile Include="workplace_etl_pipeline_xmlink.py" />
   </ItemGroup>
   <ItemGroup>
