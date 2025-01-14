@@ -35,23 +35,3 @@ class RestClient:
 
     def patch(self, endpoint, data=None, json=None, headers=None):
         return self._make_request("PATCH", endpoint, data=data, json=json, headers=headers)
-
-# # Example usage:
-# if __name__ == "__main__":
-#     api_client = RestClient("https://jsonplaceholder.typicode.com", headers={"Content-Type": "application/json"})
-
-#     # GET request
-#     response = api_client.get("/posts", params={"userId": 1})
-#     print("GET Response:", response.json())
-
-#     # POST request
-#     response = api_client.post("/posts", json={"title": "foo", "body": "bar", "userId": 1})
-#     print("POST Response:", response.json())
-
-#     # PUT request
-#     response = api_client.put("/posts/1", json={"id": 1, "title": "foo", "body": "bar", "userId": 1})
-#     print("PUT Response:", response.json())
-
-#     # DELETE request
-#     response = api_client.delete("/posts/1")
-#     print("DELETE Response Status Code:", response.status_code)
