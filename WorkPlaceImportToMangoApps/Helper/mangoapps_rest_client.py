@@ -42,6 +42,7 @@ class MangoAuth:
                     "group": {
                         "description": name,
                         "name": name,
+                        "privacy_type":"R",#P
                     }
                 }
             }
