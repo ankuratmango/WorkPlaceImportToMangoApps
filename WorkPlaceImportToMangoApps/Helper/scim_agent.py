@@ -15,8 +15,8 @@ import re
 from importlib import reload
 
 #project imports
-import scim_sdk
-import csv_header
+import Helper.scim_sdk as scim_sdk
+import Helper.csv_header as csv_header
 
 reload(sys)
 #sys.setdefaultencoding('utf-8')

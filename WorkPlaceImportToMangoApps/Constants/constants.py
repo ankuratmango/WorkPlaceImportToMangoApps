@@ -4,6 +4,7 @@ class Constants():
     def __init__(self):
         pass
     
+    META_ACCESS_TOKEN = "DQWRLZA29QUVprNDNaZAjk1d3ZAud2xPT0JmWmZAPVmhacXpXQ0daMGhBQ3YwamhhRU03LUxKNTJWbkdTTGlQWU5OLUtaX2RSOUJBdHJSd19nQWRzaTJWeGY4Y2p3QU95ZAkViZAHkwTGlIX3BUWmNkdnktRnNNUXpCSFFiTTllQVlkczdJNzRES1ByT2psN2pHTG55ekpVV1BHaEFlOW9YcjA0U3hpWGM1U0JIYnA5aFBHR3FZAeWZAlRFZAfTzFMdWdJY19jT0xjdG9xeTJVNDhSWUhjYktB" 
     GRAPH_URL_PREFIX = 'https://graph.workplace.com/'
     FIELDS_CONJ = '?fields='
     CONVERSATIONS_SUFFIX = '/conversations'

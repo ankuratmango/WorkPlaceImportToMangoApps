@@ -1,23 +1,21 @@
 import sys
 import os
 from Constants.constants import Constants
-import scim_agent
-import export_user_data
-import export_kl_category
-import workplace_etl_pipeline_xmlink
-import groups_categories
+import Helper.scim_agent as scim_agent
+import Helper.export_user_data as export_user_data
+import Helper.export_kl_category as export_kl_category
+import Helper.workplace_etl_pipeline_xmlink as workplace_etl_pipeline_xmlink
+import Helper.groups_categories as groups_categories
 import csv
 import time
 import json
 
 SCIM_URL = 'https://scim.workplace.com/'
-access_token = "DQWRLZA29QUVprNDNaZAjk1d3ZAud2xPT0JmWmZAPVmhacXpXQ0daMGhBQ3YwamhhRU03LUxKNTJWbkdTTGlQWU5OLUtaX2RSOUJBdHJSd19nQWRzaTJWeGY4Y2p3QU95ZAkViZAHkwTGlIX3BUWmNkdnktRnNNUXpCSFFiTTllQVlkczdJNzRES1ByT2psN2pHTG55ekpVV1BHaEFlOW9YcjA0U3hpWGM1U0JIYnA5aFBHR3FZAeWZAlRFZAfTzFMdWdJY19jT0xjdG9xeTJVNDhSWUhjYktB" 
+
 file_name = "all_users_new.csv"
 days = 30;
 csv_data = []
 group_members_data = {}
-
-#https://ankurqa.mangopulse.com/ce/pulse/admin/colleague/invite_colleagues
 
 my_constant = Constants()
 print(my_constant.GRAPH_URL_PREFIX)
@@ -30,7 +28,7 @@ if os.path.exists(output_file):
     os.remove(output_file)
     print(f"Existing file '{output_file}' deleted.")
 
-user_data = scim_agent.exportUsers(file_name, access_token, SCIM_URL);
+user_data = scim_agent.exportUsers(file_name, Constants.META_ACCESS_TOKEN, SCIM_URL);
 print(user_data)
 
 fields = ['Firstname', 'Lastname', 'Email', 'EmployeeID', 'Phone', 'Title', 'Enabled']
@@ -97,11 +95,11 @@ fields = [
     'Chat - Send Important messages'
 ]
 
-all_group = workplace_etl_pipeline_xmlink.elt_main(access_token, days);
+all_group = workplace_etl_pipeline_xmlink.elt_main(Constants.META_ACCESS_TOKEN, days);
 print(all_group)
 for item in all_group:
     group_id = item['id']  
-    members = workplace_etl_pipeline_xmlink.getGroupMembers(access_token, group_id)  
+    members = workplace_etl_pipeline_xmlink.getGroupMembers(Constants.META_ACCESS_TOKEN, group_id)  
     group_members_data[group_id] = members 
     print(members)
 
@@ -182,10 +180,10 @@ def exportToFile(category_data, cid, cname):
     f.close()
 
 ## START
-all_categories = groups_categories.elt_main_categories(access_token, days);
+all_categories = groups_categories.elt_main_categories(Constants.META_ACCESS_TOKEN, days);
 #category_id = '371425217800259'
 #category_id = '337195997889848'
 for item in all_categories:
-    category_data = export_kl_category.getCategoryDataById(access_token, item['id'])
+    category_data = export_kl_category.getCategoryDataById(Constants.META_ACCESS_TOKEN, item['id'])
     print (category_data)
     exportToFile(category_data, item['id'], item['title'])
