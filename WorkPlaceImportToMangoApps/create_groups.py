@@ -1,3 +1,4 @@
+from asyncio import constants
 import sys
 import os
 from Constants.constants import Constants
@@ -14,13 +15,16 @@ def get_group_member_employee_ids(group_external_id):
     employee_ids = df_group_members.loc[mask, 'EmployeeID']
     return employee_ids.astype(str).tolist()
 
-def create_group(name, count = 0):
-    group_data_response = mango_auth.create_group(token, name)
+def create_group(name, permission ,count = 0):
+    privacy = "R"
+    if(permission.upper() == "OPEN"):
+        privacy = "P"
+    group_data_response = mango_auth.create_group(token, name, privacy)
     if ("ms_errors" in group_data_response and 
         group_data_response['ms_errors']['errors']['error'][1]['field'].upper() == 'NAME'):
         new_name = name + "_" + str((count + 1))
         print("Update New Name = " + new_name)
-        return create_group(new_name, count + 1)
+        return create_group(new_name, permission, count + 1)
     return group_data_response;
 
 def add_users_in_group(group_data, group_user_id_list, group_data_response):
@@ -31,8 +35,8 @@ def add_users_in_group(group_data, group_user_id_list, group_data_response):
     return group_id
 
 def update_admin_group(mangoapps_users, group_external_id, group_id):
-    df_all_group_admin = df_all_groups[['Team Admins', 'Group External Id']]
-    team_admins = df_all_group_admin.loc[df_all_group_admin['Group External Id'] == group_external_id, 'Team Admins']
+    df_all_group_admin = df_all_groups[['Team Admins', 'Group Id']]
+    team_admins = df_all_group_admin.loc[df_all_group_admin['Group Id'] == group_external_id, 'Team Admins']
     if(len(team_admins) > 0 and not team_admins.isna().any()):
         email_list = team_admins.iloc[0].split(' | ')
         for email in email_list:
@@ -44,13 +48,9 @@ def update_admin_group(mangoapps_users, group_external_id, group_id):
                 time.sleep(2)
 
 
-all_users_data = "C:\\Users\\Ankur\\Downloads\\importdata\\users.csv"
-all_groups_data = "C:\\Users\\Ankur\\Downloads\\importdata\\groups.csv"
-all_group_members = "C:\\Users\\Ankur\\Downloads\\importdata\\members.csv"
-
-df_all_users = pd.read_csv(all_users_data)
-df_all_groups = pd.read_csv(all_groups_data)
-df_group_members = pd.read_csv(all_group_members)
+df_all_users = pd.read_csv(Constants.ALL_USER_DATA)
+df_all_groups = pd.read_csv(Constants.ALL_GROUP_DATA)
+df_group_members = pd.read_csv(Constants.ALL_GROUP_MEMBDER_DATA)
 
 #----- GET MANGOAPPS AUTH -------
 mango_auth = MangoAuth()
@@ -63,10 +63,10 @@ print(mangoapps_users)
 #------ CREATE GROUP ------------
 for index, row in df_all_groups.iterrows():
     group_data = row.to_dict()
-    group_external_id = group_data['Group External Id']
+    group_external_id = group_data['Group Id']
     group_users_employee_ids = get_group_member_employee_ids(group_external_id)
     group_user_id_list = [str(mangoapps_users[user_employee_id]['id']) for user_employee_id in group_users_employee_ids]
-    group_data_response = create_group(group_data['GroupName'])
+    group_data_response = create_group(group_data['GroupName'], group_data['Permission'])
     group_id = ''
     time.sleep(1)
     #----- Add Users in Group

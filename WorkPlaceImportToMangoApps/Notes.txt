@@ -1,0 +1,8 @@
+- Fetch users from Meta.
+- Create Users, Groups, and Members CSV files.
+- Based on the Users, Groups, and Members CSV files, create groups using the API.
+- Create groups using the API.
+- Set privacy for MangoApps groups based on Meta group privacy: if OPEN, then Public group; otherwise, Private.
+- If two groups have the same name, add "_1" or "_1_2" at the end of the group name.
+- Add members to groups using the API.
+- Update admin roles using the API.

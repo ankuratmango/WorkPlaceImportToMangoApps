@@ -39,10 +39,13 @@ assign_id = {}
 uniqueNumber = int(time.time() * 1000)
 for item in user_data:
     uniqueNumber = uniqueNumber + 1
+    email = item.get('userName', '');
+    if(len(email) == 0):
+        email = uniqueNumber
     csv_data.append({
         'Firstname': item.get('name', {}).get('givenName', ''),
         'Lastname': item.get('name', {}).get('familyName', ''),
-        'Email': item.get('userName', ''),
+        'Email': email,
         'EmployeeID': uniqueNumber, #item.get('id', ''),
         'Phone': '',  
         'Title': item.get('title', ''),
@@ -96,7 +99,6 @@ fields = [
 
 all_group = workplace_etl_pipeline_xmlink.elt_main(access_token, days);
 print(all_group)
-assign_group_id = {}
 for item in all_group:
     group_id = item['id']  
     members = workplace_etl_pipeline_xmlink.getGroupMembers(access_token, group_id)  
@@ -108,11 +110,11 @@ for item in all_group:
     csv_data.append({
         'Group Image': 'https://firstconnect.firststudentinc.com/ce/pulse/images/default_images/group-250.png?',  
         'GroupName':  item.get('name', ''), #+ "," + str(uniqueNumber),#item.get('id', '')
-        'Group Id': '',
+        'Group Id': item.get('id', ''),
         'Group External Id': uniqueNumber,#item.get('id', ''),  
         'State': 'Active',
         'Owner': 'ankurt@mangospring.com',#getGroupOwner(item['id']),  
-        'Permission': 'Private', 
+        'Permission': item.get('privacy', ''), 
         'Modules': 'Newsfeed|Member|File|Post|Chat|Pages',  
         'Show In Navigation': 'Pages|Newsfeed|Member|File|Post|Calendar|Chat|Analytics|Media_gallery|Report|Tracker|Wiki|Idea',  
         'Team Admins': getGroupAdmins(item['id']),  
@@ -135,7 +137,6 @@ for item in all_group:
         'Chat - Send IM': 'Any Group Member',  
         'Chat - Send Important messages': 'Domain Admins & Group Admins Only'
     })
-    assign_group_id[item.get('id', '')] = uniqueNumber
 
 with open(output_file, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.DictWriter(file, fieldnames=fields)
@@ -154,7 +155,7 @@ for group_id, user_list in group_members_data.items():
             user_id = assign_id[user["id"]]
             if user_id not in user_group_mapping:
                 user_group_mapping[user_id] = []
-            user_group_mapping[user_id].append(assign_group_id[group_id])
+            user_group_mapping[user_id].append(group_id)
 
 max_groups = max(len(groups) for groups in user_group_mapping.values())
 headers = ["EmployeeID"] + [f"Grouplevel{i+1}" for i in range(max_groups)]

@@ -34,6 +34,7 @@
     <Compile Include="Helper\rest_client.py" />
     <Compile Include="scim_agent.py" />
     <Compile Include="scim_sdk.py" />
+    <Compile Include="update_group_data.py" />
     <Compile Include="workplace_etl_pipeline_xmlink.py" />
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +43,7 @@
     <Folder Include="SampleMangoAppsCSVFiles\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Notes.txt" />
     <Content Include="SampleMangoAppsCSVFiles\group.csv" />
     <Content Include="SampleMangoAppsCSVFiles\group_member.csv" />
     <Content Include="SampleMangoAppsCSVFiles\users.csv" />

@@ -18,6 +18,10 @@ class Constants():
     MANGOAPPS_USERNAME = 'admin@ankurqa.com'
     MANGOAPPS_PASSWORD = 'dGVtcDEyMzQ='
 
+    ALL_USER_DATA = "C:\\Users\\Ankur\\Downloads\\importdata\\users.csv"
+    ALL_GROUP_DATA = "C:\\Users\\Ankur\\Downloads\\importdata\\groups.csv"
+    ALL_GROUP_MEMBDER_DATA = "C:\\Users\\Ankur\\Downloads\\importdata\\members.csv"
+
 
 
 

@@ -35,14 +35,14 @@ class MangoAuth:
         token = parsed_data["ms_response"]["user"]["_token"]
         return token
 
-    def create_group(self, token, name):
+    def create_group(self, token, name, privacy):
         payload = json.dumps(
             {
                 "ms_request": {
                     "group": {
                         "description": name,
                         "name": name,
-                        "privacy_type":"R",#P
+                        "privacy_type": privacy,#P
                     }
                 }
             }
