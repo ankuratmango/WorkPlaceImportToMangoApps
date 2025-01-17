@@ -1,3 +1,4 @@
+from math import fabs
 import sys
 import os
 import time
@@ -81,8 +82,12 @@ class MangoAuth:
 
             for user in users:
                 if user["employee_id"] is not None:
-                    employee_data[user["employee_id"]] = user
-
+                    if(user["employee_id"] not in employee_data):
+                        employee_data[user["employee_id"]] = user
+                    else:
+                        print("Already Exists")
+                else:
+                    print("None Employee ID")
             offset += limit
 
         return employee_data

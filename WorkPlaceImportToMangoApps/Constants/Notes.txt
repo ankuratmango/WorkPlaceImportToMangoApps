@@ -6,3 +6,4 @@
 - If two groups have the same name, add "_1" or "_1_2" at the end of the group name.
 - Add members to groups using the API.
 - Update admin roles using the API.
+- After create Mango Groups we will create CSV with Mango Group ID and Meta Group ID 

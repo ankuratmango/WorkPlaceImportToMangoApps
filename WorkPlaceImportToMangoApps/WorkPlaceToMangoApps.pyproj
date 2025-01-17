@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="create_groups.py" />
     <Compile Include="Constants\constants.py" />
+    <Compile Include="groups and posts.py" />
     <Compile Include="Helper\csv_header.py" />
     <Compile Include="Helper\export_kl_category.py" />
     <Compile Include="Helper\export_user_data.py" />
@@ -37,7 +38,6 @@
     <Compile Include="Helper\scim_sdk.py" />
     <Compile Include="update_group_data.py" />
     <Compile Include="Helper\workplace_etl_pipeline_xmlink.py" />
-    <Compile Include="workplace_etl_pipeline_xmlink %281%29.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Constants\" />

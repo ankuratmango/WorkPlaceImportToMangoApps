@@ -21,7 +21,11 @@ SEENBY_SUFFIX = '/seen'
 COMMENTS_SUFFIX = '/comments'
 ATTACHMENT_SUFFIX = '/attachments'
 POSTS_SUFFIX = '/feed'
-POST_FIELDS = 'id,from,updated_time,type,message,source,story,properties,permalink_url'
+#POST_FIELDS = 'id,from,updated_time,type,message,source,story,properties,permalink_url'
+POST_FIELDS = (
+    'id,from,updated_time,type,message,source,story,properties,permalink_url,'
+    'attachments{media,type,url,title,description,subattachments}'
+)
 JSON_KEY_DATA = 'data'
 JSON_KEY_PAGING = 'paging'
 JSON_KEY_NEXT = 'next'

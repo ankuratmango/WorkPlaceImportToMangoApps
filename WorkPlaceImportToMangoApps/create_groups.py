@@ -3,6 +3,7 @@ import sys
 import os
 from Constants.constants import Constants
 import time
+import csv
 import json
 from Helper.rest_client import RestClient
 import pandas as pd
@@ -60,6 +61,8 @@ token = mango_auth.get_auth_token()
 mangoapps_users = mango_auth.get_all_users(token)
 print(mangoapps_users)
 
+group_mango_meta_id = {}
+
 #------ CREATE GROUP ------------
 for index, row in df_all_groups.iterrows():
     group_data = row.to_dict()
@@ -74,12 +77,33 @@ for index, row in df_all_groups.iterrows():
         and "group" in group_data_response['ms_response']
         and "id" in group_data_response['ms_response']["group"]):
         group_id = add_users_in_group(group_data, group_user_id_list, group_data_response) 
+        group_mango_meta_id[group_id] = group_data['Group Id']
         time.sleep(1)
     else:
         print(f"Error in Group Creation: Name = {group_data['GroupName']}")
     #----- Updated Admins
     update_admin_group(mangoapps_users, group_external_id, group_id)
     time.sleep(1)
+
+
+filename = 'C:\\Users\\Ankur\\Downloads\\importdata\\group_meta_mango.csv'
+
+if os.path.exists(filename):
+    os.remove(filename)
+    print(f"Existing file '{filename}' deleted.")
+
+# Open the file in write mode
+with open(filename, mode='w', newline='') as file:
+    writer = csv.writer(file)
+
+    # Write the header
+    writer.writerow(['mango_group_id', 'meta_group_id'])
+
+    # Write the dictionary items
+    for key, value in group_mango_meta_id.items():
+        writer.writerow([key, value])
+
+print(f"Dictionary saved to {filename}")
 
 
 

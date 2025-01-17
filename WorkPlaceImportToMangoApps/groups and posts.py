@@ -1,9 +1,3 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-# 
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-
 import requests
 import os
 import csv
@@ -20,14 +14,16 @@ dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
 load_dotenv(dotenv_path=dotenv_path)
 
 # Workplace graph API token
-access_token = "DQWRLZA29QUVprNDNaZAjk1d3ZAud2xPT0JmWmZAPVmhacXpXQ0daMGhBQ3YwamhhRU03LUxKNTJWbkdTTGlQWU5OLUtaX2RSOUJBdHJSd19nQWRzaTJWeGY4Y2p3QU95ZAkViZAHkwTGlIX3BUWmNkdnktRnNNUXpCSFFiTTllQVlkczdJNzRES1ByT2psN2pHTG55ekpVV1BHaEFlOW9YcjA0U3hpWGM1U0JIYnA5aFBHR3FZAeWZAlRFZAfTzFMdWdJY19jT0xjdG9xeTJVNDhSWUhjYktB" 
+access_token = "DQWRLZA29QUVprNDNaZAjk1d3ZAud2xPT0JmWmZAPVmhacXpXQ0daMGhBQ3YwamhhRU03LUxKNTJWbkdTTGlQWU5OLUtaX2RSOUJBdHJSd19nQWRzaTJWeGY4Y2p3QU95ZAkViZAHkwTGlIX3BUWmNkdnktRnNNUXpCSFFiTTllQVlkczdJNzRES1ByT2psN2pHTG55ekpVV1BHaEFlOW9YcjA0U3hpWGM1U0JIYnA5aFBHR3FZAeWZAlRFZAfTzFMdWdJY19jT0xjdG9xeTJVNDhSWUhjYktB"
 # Other ENV Variables
-data_for_how_many_days = 30
-logfilepath="C:\\Users\\Ankur\\source\\repos\\WorkPlaceImportToMangoApps\\WorkPlaceImportToMangoApps"
-logfilename="workplace_etl_pipeline_production"+'_'+str("{:%Y_%m_%d_%H_%M_%S}".format(datetime.now()))+'.log'
-logfilepathandname=logfilepath+logfilename
-
-
+Days = ["15"]
+data_for_how_many_days = int(Days[0])
+LOGFILEPATH = "C:\\Users\\Ankur\\source\\repos\\WorkPlaceImportToMangoApps\\WorkPlaceImportToMangoApps"
+logfilepath=os.getenv('LOGFILEPATH')
+logfilename="workplace_etl_pipeline_production"+"_"+str("{:%Y_%m_%d_%H_%M_%S}".format(datetime.now()))+".log"
+logfilepathandname= LOGFILEPATH+logfilename
+headers = {"Authorization": f"Bearer {access_token}"}
+print("------ 1")
 
 #other variables
 end_time = datetime.now()
@@ -37,33 +33,48 @@ start_time = end_time - timedelta(days=data_for_how_many_days)
 # start_time = '2024-03-04 10:00:02.076580'
 # end_time = '2024-03-06 10:00:02.076580'
 
+try:
 # logging default configurations
-logging.basicConfig(
-    filename=logfilepathandname,
-    filemode="a",
-    level=logging.INFO,
-    format="%(asctime)s:%(levelname)s:%(message)s",
-    datefmt="%Y-%m-%d %I:%M:%S%p",
-)
+    logging.basicConfig(
+        filename=logfilename,
+        #filemode="a",
+        level=logging.DEBUG,
+        format="%(asctime)s:%(levelname)s:%(message)s",
+        datefmt="%Y-%m-%d %I:%M:%S%p",
+    )
+except Exception as e:
+    print("------ Exception in logger")
+    print(e)
+#break
+
+print("------ 2")
 
 # Function to fetch all group IDs, handling pagination
 def get_all_groups():
-    url = "https://graph.facebook.com/community/groups?limit=100"
-    headers = {"Authorization": f"Bearer {access_token}"}
+    url = "https://graph.facebook.com/community/groups?fields=id,cover,cover_url,description,icon,name,owner, privacy,purpose,join_setting,is_official_group&limit=100"
+    #print(url)
+    
     all_group = []
     logging.info('starting phase 1 of data extraction to fetch all group ids and associated metadata')
+    #print("starting phase 1 of data extraction to fetch all group ids and associated metadata")
     page_number_groups = 0
     while url:
         page_number_groups = page_number_groups+1
+        print(page_number_groups)
         if (page_number_groups%5==0):
             logging.info('on page number:'+str(page_number_groups))
+        print("------- 3")    
         number_of_retries = 0
         response = https_get_call_handling_groups(url, headers, page_number_groups, number_of_retries)
+        print(response)   
         status = response.status_code
+        print(status)
         try: 
             json_output = response.json()
+            #print(json_output)
         except Exception:
             logging.error('something wrong with parsing json',exc_info=True)
+            print("------ Exception ")
         if status == 200:
             groups = json_output.get("data", [])
             all_group.extend(groups)
@@ -71,6 +82,7 @@ def get_all_groups():
             pagination = json_output.get("paging", {})
             next_url = pagination.get("next")
             url = next_url if next_url else None
+            #print(url)
         elif status == 429:
             logging.info('sleeping for 30 seconds due to rate limit exceeding')
             time.sleep(30)
@@ -88,6 +100,7 @@ def get_all_groups():
         else: 
             logging.warn(str(status)+'exiting the loop early'+page_number_groups)
             break
+       
     return all_group
 
 # Creates arrays of arrays containing 50 ids each (can be reused for group ids or any ids)
@@ -107,6 +120,8 @@ def get_all_group_ids(all_group):
 def make_batch_request(batch_payload, number_of_retries):
     try:
         response = requests.post(f'https://graph.facebook.com/?batch={batch_payload}&include_headers=false&access_token={access_token}', timeout=60)
+        print('-----------------------')
+        print(response)
         response.raise_for_status()
         return response
     except requests.exceptions.HTTPError as e:
@@ -151,8 +166,10 @@ def make_batch_request(batch_payload, number_of_retries):
             logging.error("Request Exception:", exc_info=True)
 
 def get_all_subgroups(all_group):
+    print("get_all_subgroups")
     logging.info('starting phase 2 of data extraction to fetch all sub-group ids and associated metadata')
     batches = create_batches(get_all_group_ids(all_group))
+    print("--- 6")
     sub_groups = []
     for batch in batches:
         batch_payload = requests.utils.quote(
@@ -166,8 +183,11 @@ def get_all_subgroups(all_group):
                 ]
             )
         )
+        #print(batch_payload)
         response = make_batch_request(batch_payload, 0)
+        #print(response)
         logging.info(str(response))
+
         for group_num_in_batch, individual_response in enumerate(response.json()):
             # We need to retry individual responses within the batch of responses if the status code is not 200
             individual_response_retries = 0
@@ -192,7 +212,9 @@ def get_all_subgroups(all_group):
             
             body = json.loads(individual_response.get('body'))
             logging.info('response for group id ' + str(batch[group_num_in_batch]) + ': ' + str(body))
-            for item in body.get('data'):
+            logging.info('body.get(data) '+ str(body['data']) +" Length "+str(len(body['data'])))
+            for item in body['data']:
+                logging.info('Each data item of sub_group '+ item)
                 sub_groups.append(item)
 
             if 'paging' in body and 'next' in body['paging']:
@@ -218,21 +240,28 @@ def get_all_subgroups(all_group):
 
 def https_get_call_handling_groups(url, headers, page_number, number_of_retries):
     try:
+        print("------ 3.1")
+        retry = 1
         response = requests.get(url, headers=headers, timeout=60)
+        print("------ 3.2")
+        #print(response)
         response.raise_for_status()
+        print("------ 4")
         return response
     except requests.exceptions.HTTPError:
+        print("requests.exceptions.HTTPError")   
         number_of_retries = number_of_retries+1
-        if number_of_retries <= 3:
+        if number_of_retries <= retry:
             logging.warning('sleeping for 1 minute and get call to fetch group ids (HTTP error)')
-            time.sleep(60)
+            time.sleep(60)     
             return https_get_call_handling_groups(url, headers, page_number, number_of_retries)
         else:
             logging.info('page_number:'+str(page_number))
             logging.error("Http Error:", exc_info=True)  
     except requests.exceptions.ConnectionError:
+        print("requests.exceptions.ConnectionError")  
         number_of_retries = number_of_retries+1
-        if number_of_retries <= 3:
+        if number_of_retries <= retry:
             logging.warning('sleeping for 1 minute and get call to fetch group ids (connection error)')
             time.sleep(60)
             return https_get_call_handling_groups(url, headers, page_number, number_of_retries)
@@ -240,8 +269,9 @@ def https_get_call_handling_groups(url, headers, page_number, number_of_retries)
             logging.info('page_number:'+str(page_number))
             logging.error("Error Connecting:",exc_info=True)
     except requests.exceptions.Timeout:
+        print("requests.exceptions.Timeout")  
         number_of_retries = number_of_retries+1
-        if number_of_retries <= 3:
+        if number_of_retries <= retry:
             logging.warning('sleeping for 1 minute and get call to fetch group ids (timeout)')
             time.sleep(60)
             return https_get_call_handling_groups(url, headers, page_number, number_of_retries)
@@ -249,14 +279,17 @@ def https_get_call_handling_groups(url, headers, page_number, number_of_retries)
             logging.info('page_number:'+str(page_number))
             logging.error("Timeout Error:",exc_info=True)
     except requests.exceptions.RequestException:
+        print("equests.exceptions.RequestException")  
         number_of_retries = number_of_retries+1
-        if number_of_retries <= 3:
+        if number_of_retries <= retry:
             logging.warning('sleeping for 1 minute and get call to fetch group ids (request exception)')
             time.sleep(60)
             return https_get_call_handling_groups(url, headers, page_number, number_of_retries)
         else:
             logging.info('page_number:'+str(page_number))
             logging.error("Something Other API error:",exc_info=True)
+            print("------ 5")
+    print(requests.exceptions)        
 
 def https_get_call_handling_per_group(url, headers, group_id, number_of_retries):
     try:
@@ -330,23 +363,36 @@ Another key is added to each group object which is a array to store the posts fo
 This enhance group object is then sent into the load_group function, which loads each post for the group to the project
 '''
 def get_group_batch_data(batch, group_type):
+    logging.info('In get_group_batch_data ------ ')
+    print('In get_group_batch_data ------ ')
+    #post_url=  "https://graph.facebook.com/"+f"{group['id']}/feed?fields=id, created_time, formatting, from{{email, title, name, id, primary_address, department, locale, link}}, icon, link, name, place, poll, properties, status_type, story, to, updated_time, with_tags, type, picture, object_id, message,permalink_url, created_time,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},object_id, message,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},message, object_id, permalink_url, created_time}} ,permalink_url, created_time}}&since={start_time}&until={end_time}"
+    #print('url ------ '+post_url)
     batch_payload = requests.utils.quote(
         json.dumps(
             [
                 {
                     "method": "GET",
-                    "relative_url": f"{group['id']}/feed?fields=id,from{{email, title, name, id, primary_address, department, locale, link}},message,permalink_url, created_time,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},message,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},message, permalink_url, created_time}} ,permalink_url, created_time}}&since={start_time}&until={end_time}"
+                    "relative_url": f"{group['id']}/feed?fields=id,attachments,created_time, formatting, from{{email, title, name, id, primary_address, department, locale, link}}, icon, link, name, place, poll{{options,votes}}, properties, status_type, story, to, updated_time, with_tags, type, picture, object_id, message,permalink_url,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},object_id, message,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},message, object_id, permalink_url, created_time}} ,permalink_url, created_time}}&since={start_time}&until={end_time}"
                 }
                 for group in batch
             ]
         )
     )
+
+    print(batch_payload)
+   # print('requests.utils ------ '+ str(requests.utils.get('relative_url')))
+
     response = make_batch_request(batch_payload, 0)
+    #response = requests.get(post_url, headers=headers, timeout=60)
+  #  print('response:' + str(response))
     logging.info('batch request response: ' + str(response.status_code))
     for group_num_in_batch, individual_response in enumerate(response.json()):
+        #print('---------------ha')
+        #print(individual_response.get('code'))
         # We need to retry individual responses within the batch of responses if the status code is not 200
         individual_response_retries = 0
         while individual_response.get('code') != 200:
+            #print('failed------')
             individual_response_retries = individual_response_retries + 1
             logging.warning('retrying individual response for group id: ' + str(batch[group_num_in_batch]['id']))
             if individual_response_retries > 3:
@@ -358,18 +404,21 @@ def get_group_batch_data(batch, group_type):
                     [
                         {
                             "method": "GET",
-                            "relative_url": f"{batch[group_num_in_batch]['id']}/feed?fields=id,from{{email, title, name, id, primary_address, department, locale, link}},message,permalink_url, created_time,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},message,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}},message, permalink_url, created_time}} ,permalink_url, created_time}}&since={start_time}&until={end_time}"
+                            "relative_url": f"{batch[group_num_in_batch]['id']}/feed?fields=id,attachments,created_time, formatting, from{{email, title, name, id, primary_address, department, locale, link}},icon, link, name, place, poll, properties, status_type, story, to, updated_time, with_tags, type,picture, object_id, message,permalink_url,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}}, object_id, message,comments{{id,from{{email, title, name, id, primary_address, department, locale, link}}, object_id, message, permalink_url, created_time}} ,permalink_url, created_time}}&since={start_time}&until={end_time}"
                         }
                     ]
                 )
             )
             individual_response = make_batch_request(batch_payload, 0).json()[0]
-        
+            print('individual_response '+ str(individual_response))
         body = json.loads(individual_response.get('body'))
         logging.info('response for group id ' + str(batch[group_num_in_batch]['id']) + ': ' + str(body))
         batch[group_num_in_batch]['posts'] = []
+        logging.info('get_group_batch_data :: body.get(data) ' + str(body.get('data')))
         for item in body.get('data'):
             batch[group_num_in_batch]['posts'].append(item)
+
+        
 
         if 'paging' in body and 'next' in body['paging']:
             logging.info('Paging for group id ' + str(batch[group_num_in_batch]['id']))
@@ -389,17 +438,26 @@ def get_group_batch_data(batch, group_type):
                     url = None
     batch_messages_processed = 0
     batch_messages_extracted = 0
-    # for group in batch:
-    #     group_messages_processed, group_messages_extracted = load_group(group, group_type)
-    #     batch_messages_processed = batch_messages_processed + group_messages_processed
-    #     batch_messages_extracted = batch_messages_extracted + group_messages_extracted
+    #print('before for loop ', str(batch))
+    with open('posts.json', 'w') as json_file:
+        json.dump(batch, json_file, indent=4)
+    for group in batch:
+        #print('in for loop ', group)
+        group_messages_processed, group_messages_extracted = load_group(group, group_type)
+        print('in for loop group_messages_extracted ', group_messages_extracted)
+        print('in for loop group_messages_processed ', group_messages_processed)
+        batch_messages_processed = batch_messages_processed + group_messages_processed
+        batch_messages_extracted = batch_messages_extracted + group_messages_extracted
+
     
     return batch_messages_processed, batch_messages_extracted
 
 # Write data directly to a CSV file
 def exporting_from_workplace_to_project(all_group, group_type):
     logging.info(f'starting next phase of data extraction, to fetch information from each {group_type}')
+    #print("tarting next phase of data extraction, to fetch information from each"+str({group_type})
     logging.info('total_groups:'+str(len(all_group)))
+    print(len(all_group))
     group_batches = create_batches(all_group)
     total_count_messages_extracted=0
     total_count_messages_processed=0
@@ -432,9 +490,9 @@ def elt_main():
     with open("all_sub_groups.json", "r") as file:
         all_sub_groups = json.load(file)
     '''
-    with open("all_sub_groups.json", "w") as outfile:
-        json.dump(all_sub_groups, outfile)
-    all_group = all_group[:1]
+    #with open("all_sub_groups.json", "w") as outfile:
+        #json.dump(all_sub_groups, outfile)
+
     exporting_from_workplace_to_project(all_group, "group")
     exporting_from_workplace_to_project(all_sub_groups, "sub-group")
 
@@ -442,3 +500,4 @@ try:
     elt_main()
 except Exception:
     logging.error('something went wrong with the script',exc_info=True)
+    #print("something went wrong with the script")
