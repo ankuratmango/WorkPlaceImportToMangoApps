@@ -22,6 +22,8 @@ class Constants():
     ALL_USER_DATA = "C:\\Users\\Ankur\\Downloads\\importdata\\users.csv"
     ALL_GROUP_DATA = "C:\\Users\\Ankur\\Downloads\\importdata\\groups.csv"
     ALL_GROUP_MEMBDER_DATA = "C:\\Users\\Ankur\\Downloads\\importdata\\members.csv"
+    ALL_MANGO_META_GROUP_ID = "C:\\Users\\Ankur\\Downloads\\importdata\\group_meta_mango.csv"
+    ALL_MANGO_USER_ID_PSWD = "C:\\Users\\Ankur\\Downloads\\importdata\\mango_user_pssd.csv"
 
 
 

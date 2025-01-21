@@ -55,7 +55,7 @@ df_group_members = pd.read_csv(Constants.ALL_GROUP_MEMBDER_DATA)
 
 #----- GET MANGOAPPS AUTH -------
 mango_auth = MangoAuth()
-token = mango_auth.get_auth_token()
+token = mango_auth.get_auth_token_by_api_key()
 
 #-------- GET ALL MANGOAPPS USER DATA -------
 mangoapps_users = mango_auth.get_all_users(token)
@@ -86,7 +86,7 @@ for index, row in df_all_groups.iterrows():
     time.sleep(1)
 
 
-filename = 'C:\\Users\\Ankur\\Downloads\\importdata\\group_meta_mango.csv'
+filename = Constants.ALL_MANGO_META_GROUP_ID
 
 if os.path.exists(filename):
     os.remove(filename)
