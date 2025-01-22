@@ -56,6 +56,33 @@ def get_mango_token(meta_user_id):
 
 token = mango_auth.get_auth_token_by_api_key()
 
+def update_comment(mango_auth, get_mango_token, mango_post, post_id, comment):
+    comment_message = comment['message']
+    comment_user_id = comment['from']['id']
+    if(mango_post["ms_response"] and 
+                       mango_post["ms_response"]['feeds'] and
+                       mango_post["ms_response"]['feeds'][0] and
+                       mango_post["ms_response"]['feeds'][0]["id"]):
+        user_token = get_mango_token(comment_user_id)
+        mango_auth.post_comment(user_token, post_id, comment_message)
+        print("Comment Updated = " + str(comment_message))
+        
+
+def update_reaction_post(mango_auth, get_mango_token, post_id, reaction):
+    reaction_user_id = reaction['id']
+    reaction_type = reaction['type']
+    user_token = get_mango_token(reaction_user_id)
+    mango_auth.post_reaction(user_token, post_id, reaction_type)
+    print("Reaction Updated = " + str(reaction['type']) + " - " + str(reaction_user_id))
+
+def get_post_message(post):
+    if('story' in post and post['story']):
+        message = post['story']
+    if('message' in post and post['message']):
+        message = post['message']
+        print("Post Updated = " + message)
+    return message
+
 for index, row in df_all_groups.iterrows():
     data = row.to_dict()
     print(data)
@@ -63,36 +90,21 @@ for index, row in df_all_groups.iterrows():
     posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, since_date)
     mango_group_id = mango_meta_groupid[str(data['Group Id'])]
     for post in reversed(posts):
+        time.sleep(2)
         message = ""
         meta_user_id = post['from']['id']
-        if('story' in post and post['story']):
-            message = post['story']
-        if('message' in post and post['message']):
-            message = post['message']
-            print(post)
+        message = get_post_message(post)
         user_token =  get_mango_token(meta_user_id)
         mango_post = mango_auth.post_feed_in_group(user_token, mango_group_id, message)
         post_id = mango_post["ms_response"]['feeds'][0]["id"]
         if('reactions' in post and len(post['reactions']) > 0):
             for reaction in post['reactions']:
-                reaction_user_id = reaction['id']
-                reaction_type = reaction['type']
-                user_token = get_mango_token(reaction_user_id)
-                mango_auth.post_reaction(user_token, post_id, reaction_type)
-                print("")
+                update_reaction_post(mango_auth, get_mango_token, post_id, reaction)
         if('comments' in post and len(post['comments']) > 0):
             for comment in post['comments']:
                 if('message' in comment):
-                    comment_message = comment['message']
-                    comment_user_id = comment['from']['id']
-                    if(mango_post["ms_response"] and 
-                       mango_post["ms_response"]['feeds'] and
-                       mango_post["ms_response"]['feeds'][0] and
-                       mango_post["ms_response"]['feeds'][0]["id"]):
-                        user_token = get_mango_token(comment_user_id)
-                        mango_auth.post_comment(user_token, post_id, comment_message)
-                        print(comment)
-    
+                    update_comment(mango_auth, get_mango_token, mango_post, post_id, comment)
+                    time.sleep(2)
 
 
     

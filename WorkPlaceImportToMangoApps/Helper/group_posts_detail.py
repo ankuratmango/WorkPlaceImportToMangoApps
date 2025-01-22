@@ -26,6 +26,10 @@ POST_FIELDS = (
     'id,from,updated_time,type,message,source,story,properties,permalink_url,'
     'attachments{media,type,url,title,description,subattachments}'
 )
+POST_COMMENT_FIELDS = (
+    'id,from,reactions,updated_time,type,message,source,story,properties,permalink_url,'
+    'attachments{media,type,url,title,description,subattachments}'
+)
 JSON_KEY_DATA = 'data'
 JSON_KEY_PAGING = 'paging'
 JSON_KEY_NEXT = 'next'
@@ -49,7 +53,7 @@ def getSeenByData(access_token, post_id):
     return getPagedData(access_token, endpoint, [])
 
 def getCommentsData(access_token, post_id):
-    endpoint  = GRAPH_URL_PREFIX + post_id + COMMENTS_SUFFIX
+    endpoint  = GRAPH_URL_PREFIX + post_id + COMMENTS_SUFFIX + FIELDS_CONJ + POST_COMMENT_FIELDS
     return getPagedData(access_token, endpoint, [])
 
 def getAttachmentData(access_token, post_id):

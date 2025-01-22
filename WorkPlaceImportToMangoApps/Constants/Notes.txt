@@ -1,9 +1,19 @@
 - Fetch users from Meta.
-- Create Users, Groups, and Members CSV files.
+- If the Email ID of the Meta user is not available, use the Meta Employee ID.
+- Create CSV files for Users, Groups, and Members.
 - Based on the Users, Groups, and Members CSV files, create groups using the API.
 - Create groups using the API.
-- Set privacy for MangoApps groups based on Meta group privacy: if OPEN, then Public group; otherwise, Private.
+- Set privacy for MangoApps groups based on Meta group privacy: if the group is OPEN, set it as a Public group; otherwise, set it as Private.
 - If two groups have the same name, add "_1" or "_1_2" at the end of the group name.
 - Add members to groups using the API.
 - Update admin roles using the API.
-- After create Mango Groups we will create CSV with Mango Group ID and Meta Group ID 
+- After creating Mango Groups, create a CSV with Mango Group ID and Meta Group ID.
+- Fetch the Feed from Meta and update it in Mango.
+- While updating the feed in Mango, log in as the particular user and update the post.
+- For logging in a particular user, a CSV with login_id and password is required.
+- After updating the post, update reactions on the post based on the user.
+- Update comments in the feed.
+
+---- PENDING ITEMS
+1) Attachements 
+2) Reaction on Comments
