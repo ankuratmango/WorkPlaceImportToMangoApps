@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="create_groups.py" />
     <Compile Include="Constants\constants.py" />
+    <Compile Include="download_group_media.py" />
     <Compile Include="groups and posts.py" />
     <Compile Include="Helper\csv_header.py" />
     <Compile Include="Helper\export_kl_category.py" />

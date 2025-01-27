@@ -35,3 +35,27 @@ class RestClient:
 
     def patch(self, endpoint, data=None, json=None, headers=None):
         return self._make_request("PATCH", endpoint, data=data, json=json, headers=headers)
+
+    def download_image(self, image_url, filepath):
+        image_data = requests.get(image_url, stream=True)
+        if image_data.status_code == 200:
+            with open(filepath, 'wb') as f:
+                for chunk in image_data:
+                    f.write(chunk)
+                    print("Downloading....")
+        return filepath
+
+    def upload_file(self, token, image_url, filepath):
+        headers = {
+          'Content-Type': 'application/json',
+          'Cookie': "_felix_session_id=" + token,
+        }
+
+        url = image_url
+        file_path = filepath
+        with open(file_path, 'rb') as f:
+            files = {'file': f}
+            response = requests.post(url, files=files)
+            return response
+
+        print(response.json())

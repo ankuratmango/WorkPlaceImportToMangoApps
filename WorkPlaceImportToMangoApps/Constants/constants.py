@@ -25,6 +25,8 @@ class Constants():
     ALL_MANGO_META_GROUP_ID = "C:\\Users\\Ankur\\Downloads\\importdata\\group_meta_mango.csv"
     ALL_MANGO_USER_ID_PSWD = "C:\\Users\\Ankur\\Downloads\\importdata\\mango_user_pssd.csv"
 
+    DOWNLOAD_FOLDER_META = "C:\\Users\\Ankur\\source\\repos\\WorkPlaceImportToMangoApps\\WorkPlaceImportToMangoApps\\download_file_meta"
+
 
 
 

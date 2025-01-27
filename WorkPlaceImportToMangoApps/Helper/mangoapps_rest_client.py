@@ -59,6 +59,28 @@ class MangoAuth:
         token = parsed_data["ms_response"]["user"]["session_id"]
         return token
 
+    def get_auth_data(self, user_id, pswd):
+        payload = json.dumps(
+            {
+                "ms_request": {
+                    "user": {
+                        "api_key": "MangoMessenger",
+                        "username": str(user_id),
+                        "password": self.get_base64(pswd)
+                    }
+                }
+            }
+        )
+
+        response = self.api_client.post(
+            "/api/login.json",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+        )
+
+        parsed_data = json.loads(response.content.decode("utf-8"))
+        return parsed_data
+
     def create_group(self, token, name, privacy):
         payload = json.dumps(
             {
@@ -166,7 +188,7 @@ class MangoAuth:
         parsed_data = json.loads(response.content.decode("utf-8"))
         return parsed_data
 
-    def post_feed_in_group(self, token, group_id, message):
+    def post_feed_in_group(self, token, group_id, message, attachment_ids):
         payload = json.dumps(
             {
                 "ms_request": {
@@ -175,6 +197,7 @@ class MangoAuth:
                         "feed_type": "group",
                         "group_id": str(group_id),
                         "body": message,
+                        "attachments": attachment_ids
                     }
                 }
             }
@@ -233,3 +256,10 @@ class MangoAuth:
         encoded_bytes = base64.b64encode(value.encode('utf-8'))
         encoded_string = encoded_bytes.decode('utf-8')
         return encoded_string
+
+    def download_image(self, image_url, filepath):
+         return self.api_client.download_image(image_url, filepath);
+
+    def upload_file(self, token, filepath, mango_group_id, mango_user_id):
+        file_url = Constants.MANGOAPPS_URL +"/mjanus/fu?attachment_type=FA&project_id="+str(mango_group_id)+"&is_visible=Y&felix_id="+str(mango_user_id)+"&_felix_session_id=" + token
+        return self.api_client.upload_file(token, file_url, filepath);
