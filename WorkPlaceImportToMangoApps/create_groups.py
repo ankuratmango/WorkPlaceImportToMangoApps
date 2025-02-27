@@ -85,7 +85,7 @@ for index, row in df_all_groups.iterrows():
     update_admin_group(mangoapps_users, group_external_id, group_id)
     time.sleep(1)
 
-
+#Mango_Meta_Group_ids
 filename = Constants.ALL_MANGO_META_GROUP_ID
 
 if os.path.exists(filename):

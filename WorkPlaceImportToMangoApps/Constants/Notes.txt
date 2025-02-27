@@ -17,3 +17,18 @@
 ---- PENDING ITEMS
 1) Attachements 
 2) Reaction on Comments
+3) Need full access key 
+
+
+
+
+
+
+----- Process ---------
+- call main - Get Users, Groups and Members
+- 3 Files should create users.csv, groups.cvs and members.csv
+- sync users to MangoApps
+- after sync download temp id, pswd file - mango_user_pssd.csv
+- call create_groups to create groups, add members and update admins
+- 1 File should create group_meta_mango.csv
+- call update_group_data to update post, comments, reaction and attachments
