@@ -88,7 +88,7 @@ class MangoAuth:
                     "group": {
                         "description": name,
                         "name": name,
-                        "privacy_type": privacy,  # P
+                        "privacy_type": privacy, 
                     }
                 }
             }
@@ -160,6 +160,35 @@ class MangoAuth:
         )
         parsed_data = json.loads(response.content.decode("utf-8"))
         return parsed_data
+
+    def add_external_id_in_group(self, token, group_data, group_id, group_external_id):
+        payload = json.dumps({
+          "ms_request": {
+            "conversation": {
+              "category": "G",
+              "project_id": group_id,
+              "custom_fields": [
+                {
+                  "external_id": group_external_id
+                }
+              ]
+            }
+          }
+        })
+
+        headers = {
+            "Content-Type": "application/json",
+            "Cookie": "_felix_session_id=" + token,
+        }
+
+        response = self.api_client.post(
+            "api/conversations/add_custom_fields.json",
+            data=payload,
+            headers=headers,
+        )
+        parsed_data = json.loads(response.content.decode("utf-8"))
+        return parsed_data
+
 
     def add_admin_in_group(self, token, group_id, admin_id):
         payload = json.dumps(

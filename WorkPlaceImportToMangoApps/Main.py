@@ -79,7 +79,7 @@ def add_single_quotes(value):
     return f"{value}"
 
 
-output_file = "C:\\Users\\Ankur\\Downloads\\importdata\\groups.csv"
+output_file = current_directory + "\\importdata\\groups.csv"
 if os.path.exists(output_file):
     os.remove(output_file)
     print(f"Existing file '{output_file}' deleted.")
@@ -158,7 +158,7 @@ for group_id, user_list in group_members_data.items():
 max_groups = max(len(groups) for groups in user_group_mapping.values())
 headers = ["EmployeeID"] + [f"Grouplevel{i+1}" for i in range(max_groups)]
 
-csv_filename = "C:\\Users\\Ankur\\Downloads\\importdata\\members.csv"
+csv_filename = current_directory + "\\importdata\\members.csv"
 with open(csv_filename, mode="w", newline="", encoding="utf-8") as csv_file:
     writer = csv.writer(csv_file)
     writer.writerow(headers)
@@ -171,7 +171,7 @@ print(f"CSV file '{csv_filename}' has been created.")
 
 # ------------- KNOWLEDGE LIBRARY --------------
 def exportToFile(category_data, cid, cname):
-    file_name = "C:\\Users\\Ankur\\Downloads\\importdata\\categorie_" + cname + "_" + cid + ".txt"
+    file_name = current_directory + "\\importdata\\categorie_" + cname + "_" + cid + ".txt"
     if os.path.exists(file_name):
         os.remove(file_name)
         print(f"Existing file '{file_name}' deleted.")
