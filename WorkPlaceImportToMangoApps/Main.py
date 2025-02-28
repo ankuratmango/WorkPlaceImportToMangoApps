@@ -21,8 +21,8 @@ my_constant = Constants()
 print(my_constant.GRAPH_URL_PREFIX)
 
 #-----------------IMPORT USER------------------------
-
-output_file = "C:\\Users\\Ankur\\Downloads\\importdata\\users.csv"
+current_directory = os.getcwd()
+output_file = current_directory + "\\importdata\\users.csv"
 
 if os.path.exists(output_file):
     os.remove(output_file)
