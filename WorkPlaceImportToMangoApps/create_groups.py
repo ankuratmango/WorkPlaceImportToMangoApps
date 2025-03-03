@@ -104,6 +104,7 @@ for index, row in df_all_groups.iterrows():
             print(f"Error in Group Creation: Name = {group_data['GroupName']}")
             time.sleep(1)
     else:
+        print("Group Already Available ID = " + str(mango_group_if_exists[0]));
         group_id = mango_group_if_exists[0]
     time.sleep(1)
    
