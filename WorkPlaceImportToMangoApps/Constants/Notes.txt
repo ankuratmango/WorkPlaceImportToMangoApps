@@ -21,9 +21,6 @@
 
 
 
-
-
-
 ----- Process ---------
 - call main - Get Users, Groups and Members
 - 3 Files should create users.csv, groups.cvs and members.csv
@@ -32,3 +29,18 @@
 - call create_groups to create groups, add members and update admins
 - 1 File should create group_meta_mango.csv
 - call update_group_data to update post, comments, reaction and attachments
+
+
+
+------------ Re-Runnable 
+Users: Working well.
+Create Groups: Create a local table and add the mapping of Mango Group ID and Meta Group ID. 
+If the ID is available in the group_meta_mango.csv file, it will be considered as an already existing group.
+Update Group Privacy: While creating the API, set privacy for MangoApps groups based on Meta 
+group privacy. If the group is OPEN, set it as a Public group; otherwise, set it as Private.
+Add Members: We are sending an API request every time to add a user, but there is an issue in 
+the API. We set it to not generate a feed for adding users, but it's still generating. 
+We need to fix the API, or the client should call the Members API to check for existing 
+users and add them if not already available.
+Update Group Admin: The client calls the API every time.
+Feeds Update: Maintain a table Mango_Feed_id, Meta_feed_id, LastUpdateInMango.

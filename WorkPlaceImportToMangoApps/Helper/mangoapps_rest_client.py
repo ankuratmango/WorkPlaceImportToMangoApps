@@ -141,7 +141,7 @@ class MangoAuth:
         payload = json.dumps(
             {
                 "ms_request": {
-                    "group": {"add_member_ids": group_user_ids, "generate_feed": "Y"}
+                    "group": {"add_member_ids": group_user_ids, "generate_feed": "N"}
                 }
             }
         )
@@ -154,7 +154,7 @@ class MangoAuth:
         response = self.api_client.put(
             "/api/groups/"
             + str(group_id)
-            + "/members/manage.json?send_member_list=false",
+            + "/members/manage.json?send_member_list=false&generate_feed=N",
             data=payload,
             headers=headers,
         )
