@@ -242,6 +242,7 @@ class MangoAuth:
             data=payload,
             headers=headers,
         )
+        print("FEED REQUEST = " + payload)
         parsed_data = json.loads(response.content.decode("utf-8"))
         return parsed_data
 
@@ -263,6 +264,7 @@ class MangoAuth:
             data=payload,
             headers=headers,
         )
+        print("FEED COMMENT REQUEST = " + payload)
         parsed_data = json.loads(response.content.decode("utf-8"))
         print(response.text)
 
@@ -277,6 +279,7 @@ class MangoAuth:
             "/api/feeds/" + str(feed_id) + "/like.json?type=" + reaction,
             headers=headers,
         )
+        print("FEED REACTION REQUEST FEED_ID = " + str(feed_id) + " --- Reaction = " + str(reaction))
         parsed_data = json.loads(response.content.decode("utf-8"))
         print(response.text)
 

@@ -25,7 +25,7 @@ class Constants():
     ALL_GROUP_MEMBDER_DATA = current_directory + "\\importdata\\members.csv"
     ALL_MANGO_META_GROUP_ID = current_directory + "\\importdata\\group_meta_mango.csv"
     ALL_MANGO_USER_ID_PSWD = current_directory + "\\importdata\\mango_user_pssd.csv"
-    ALL_MANGO_META_FEED_ID = current_directory + "\\importdata\\feed_meta_mango.csv"
+    FOLDER_GROUPFEEDS = current_directory + "\\importdata\\groupfeeds"
 
     DOWNLOAD_FOLDER_META = current_directory + "\\download_file_meta"
 
