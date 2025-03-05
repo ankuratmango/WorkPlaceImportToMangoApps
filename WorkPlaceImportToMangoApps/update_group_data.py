@@ -211,6 +211,7 @@ def update_status_to_end(mango_group_id, mango_id, meta_id, meta_group_id):
 
 def is_post_exist(mango_group_id, post, meta_group_id):
     meta_id = post["id"]
+    meta_user_id = post['from']['id']
     group_feeds_file_name = str(mango_group_id) + "_" + str(meta_group_id) + ".csv"
     group_feeds_file_path = os.path.join(Constants.FOLDER_GROUPFEEDS, group_feeds_file_name)
     if os.path.exists(group_feeds_file_path):
@@ -219,10 +220,15 @@ def is_post_exist(mango_group_id, post, meta_group_id):
     if meta_id in df_group_mango_meta_feed_id['meta_id'].values:
         row = df_group_mango_meta_feed_id.loc[df_group_mango_meta_feed_id["meta_id"] == meta_id]
         status_value = row["status"].values[0] if not row.empty else None
+        meta_post_time_last = datetime.strptime(row["meta_time"].values[0], "%Y-%m-%dT%H:%M:%S%z")
+        meta_post_time_latest = datetime.strptime(post["updated_time"], "%Y-%m-%dT%H:%M:%S%z")
         if(status_value == "END"):
             return True
-        if(status_value == "START"):
+        if(status_value == "START" or meta_post_time_latest != meta_post_time_last):
             #Mango Feed Delete Code
+            mango_id =  row["mango_id"].values[0]
+            user_token = get_mango_token(meta_user_id)
+            mango_auth.delete_post(user_token, mango_id, mango_group_id)
             df_group_mango_meta_feed_id = df_group_mango_meta_feed_id[df_group_mango_meta_feed_id["meta_id"] != meta_id] 
             df_group_mango_meta_feed_id.to_csv(group_feeds_file_path, index=False)
     return False
@@ -292,9 +298,6 @@ def update_post(mango_auth, mango_group_id, post, meta_group_id):
 
     except Exception as exception:
         print(exception)
-
-
-
 
 
 # Open the file in read mode

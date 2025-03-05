@@ -39,17 +39,17 @@ for item in user_data:
     uniqueNumber = uniqueNumber + 1
     email = item.get('userName', '');
     if(len(email) == 0):
-        email = item.get('id', '') #uniqueNumber
+        email = item.get('id', '') 
     csv_data.append({
         'Firstname': item.get('name', {}).get('givenName', ''),
         'Lastname': item.get('name', {}).get('familyName', ''),
         'Email': email,
-        'EmployeeID': item.get('id', ''),#uniqueNumber, #item.get('id', ''),
+        'EmployeeID': item.get('id', ''),
         'Phone': '',  
         'Title': item.get('title', ''),
         'Enabled': item.get('active', False),
     })
-    assign_id[item.get('id', '')] = item.get('id', '') #uniqueNumber
+    assign_id[item.get('id', '')] = item.get('id', '') 
 
 with open(output_file, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.DictWriter(file, fieldnames=fields)

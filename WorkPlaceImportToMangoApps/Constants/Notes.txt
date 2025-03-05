@@ -44,3 +44,15 @@ We need to fix the API, or the client should call the Members API to check for e
 users and add them if not already available.
 Update Group Admin: The client calls the API every time.
 Feeds Update: Maintain a table Mango_Feed_id, Meta_feed_id, LastUpdateInMango.
+
+
+
+--------------
+User Sync without image
+If the Email ID of the Meta user is not available, use the Meta Employee ID.
+Create groups using the API.
+Set privacy for MangoApps groups based on Meta group privacy: if the group is OPEN, set it as a Public group; otherwise, set it as Private.
+If two groups have the same name, add "_1" or "_1_2" at the end of the group name.
+Add members to groups using the API.
+Update admin roles using the API.
+Getting admin roles detail in group data.

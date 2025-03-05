@@ -284,6 +284,21 @@ class MangoAuth:
         print(response.text)
 
 
+    def delete_post(self, token, mango_id, mango_group_id):
+        headers = {
+          'Content-Type': 'application/json',
+          'Cookie': "_felix_session_id=" + token,
+        }
+
+        response = self.api_client.delete(
+            "/api/feeds/" + str(mango_id),
+            headers=headers,
+        )
+        print("DELETE FEED = " + str(mango_id))
+        parsed_data = json.loads(response.content.decode("utf-8"))
+        print(response.text)
+
+
     def get_base64(self, value):
         encoded_bytes = base64.b64encode(value.encode('utf-8'))
         encoded_string = encoded_bytes.decode('utf-8')
