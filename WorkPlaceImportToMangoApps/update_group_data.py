@@ -13,8 +13,9 @@ from Helper.mangoapps_rest_client import MangoAuth
 from urllib.parse import urlparse
 from datetime import datetime
 
-since_date = '31-12-2020'
+#since_date = '31-12-2020'
 since_date = '1-1-2025'
+until_date = '16-1-2025'
 df_all_users = pd.read_csv(Constants.ALL_USER_DATA)
 df_all_groups = pd.read_csv(Constants.ALL_GROUP_DATA)
 df_group_members = pd.read_csv(Constants.ALL_GROUP_MEMBDER_DATA)
@@ -333,7 +334,7 @@ if os.path.exists(Constants.ALL_MANGO_META_GROUP_ID):
         if(mango_group_if_exists['post'].values[0] == "START"):
             print(data)
             group_data = group_posts_detail.getGroupData(Constants.META_ACCESS_TOKEN, str(data['Group Id']))
-            posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, since_date)
+            posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, since_date, until_date)
             mango_group_id = mango_meta_groupid[str(data['Group Id'])]
             meta_group_id = str(data['Group Id'])
             all_post_updated = True

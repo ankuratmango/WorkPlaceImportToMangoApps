@@ -16,7 +16,7 @@
 
 ---- PENDING ITEMS
 1) Attachements 
-2) Reaction/Nested on Comments
+2) Reaction
 3) Need full access key 
 4) Attachements in comments
 
@@ -56,8 +56,15 @@ If two groups have the same name, add "_1" or "_1_2" at the end of the group nam
 Add members to groups using the API.
 Update admin roles using the API.
 Getting admin roles detail in group data.
+we have since_date and until_date to get data of specif date
 
 ------- Issue
 not getting updated at time of comments but post time update if we edit comment
 if we want data from 15 jan 2025 and any feed we created 14 Jan 2025 and if we updated any comment
 16 jan 2025 still that data not coming..
+
+
+
+------------- Need Server Help
+- If we get API to bulk update chats so no need to access server that script can run from outside
+- 

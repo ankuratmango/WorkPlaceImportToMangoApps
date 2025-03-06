@@ -23,7 +23,7 @@ ATTACHMENT_SUFFIX = '/attachments'
 POSTS_SUFFIX = '/feed'
 #POST_FIELDS = 'id,from,updated_time,type,message,source,story,properties,permalink_url'
 POST_FIELDS = (
-    'id,from,updated_time,type,message,source,story,properties,permalink_url,'
+    'id,from,updated_time,created_time,type,message,source,story,properties,permalink_url,'
     'attachments{media,type,url,title,description,subattachments}'
 )
 POST_COMMENT_FIELDS = (
@@ -40,8 +40,8 @@ def getAllGroups(access_token, community_id):
     endpoint  = GRAPH_URL_PREFIX + community_id + GROUPS_SUFFIX + FIELDS_CONJ + GROUP_FIELDS
     return getPagedData(access_token, endpoint, [])
 
-def getAllPostsFromGroup(access_token, group_id, since_date):
-    endpoint  = GRAPH_URL_PREFIX + group_id + POSTS_SUFFIX + FIELDS_CONJ + POST_FIELDS + SINCE_CONJ + since_date
+def getAllPostsFromGroup(access_token, group_id, since_date, until_date):
+    endpoint  = GRAPH_URL_PREFIX + group_id + POSTS_SUFFIX + FIELDS_CONJ + POST_FIELDS  + SINCE_CONJ + since_date + '&until=' + until_date
     return getPagedData(access_token, endpoint, [])
 
 def getReactionsData(access_token, post_id):
@@ -60,8 +60,8 @@ def getAttachmentData(access_token, post_id):
     endpoint  = GRAPH_URL_PREFIX + post_id + ATTACHMENT_SUFFIX
     return getPagedData(access_token, endpoint, [])
 
-def processGroupPosts(access_token, group_data, since_date):
-    post_list = getAllPostsFromGroup(access_token, group_data['id'], since_date)
+def processGroupPosts(access_token, group_data, since_date, until_date):
+    post_list = getAllPostsFromGroup(access_token, group_data['id'], since_date, until_date)
     if post_list:
         for idx,post in enumerate(post_list):
             post['group_name'] = group_data['name']
