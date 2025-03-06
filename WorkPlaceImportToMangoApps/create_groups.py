@@ -1,4 +1,5 @@
 from asyncio import constants
+from functools import total_ordering
 import sys
 import os
 from Constants.constants import Constants
@@ -30,9 +31,14 @@ def create_group(name, permission ,count = 0):
 
 def add_users_in_group(group_data, group_user_id_list, group_id):
     print("GROUP CREATED = " + group_data['GroupName']) 
-    mango_auth.add_users_in_group(token, group_id, group_user_id_list)
-    print("ADDED USERS IN GROUP = " + str(group_user_id_list))
-    return group_id
+    member_resp = mango_auth.add_users_in_group(token, group_id, group_user_id_list)
+    if(member_resp['ms_response']['group_id'] == group_id):
+        print("ADDED USERS IN GROUP = " + str(group_user_id_list))
+        filename = Constants.ALL_MANGO_META_GROUP_ID
+        df_group_mango_meta_id = pd.read_csv(filename)
+        df_group_mango_meta_id.loc[df_group_mango_meta_id['mango_group_id'] == group_id, ['member']] = ['END']
+        df_group_mango_meta_id.to_csv(filename, index=False)
+        return group_id
 
 def add_external_id_in_group(group_data, group_id, group_external_id):
     print("ADD EXTERNAL ID GROUP = " + group_data['GroupName']) 
@@ -41,25 +47,51 @@ def add_external_id_in_group(group_data, group_id, group_external_id):
 def update_admin_group(mangoapps_users, group_external_id, group_id):
     df_all_group_admin = df_all_groups[['Team Admins', 'Group Id']]
     team_admins = df_all_group_admin.loc[df_all_group_admin['Group Id'] == group_external_id, 'Team Admins']
+    all_success = False
     if(len(team_admins) > 0 and not team_admins.isna().any()):
         email_list = team_admins.iloc[0].split(' | ')
+        all_success = False
         for email in email_list:
             print(email) 
             df_all_email_employeeid = df_all_users[['Email', 'EmployeeID']]
             employeeid = df_all_email_employeeid.loc[df_all_email_employeeid['Email'] == email, 'EmployeeID']
             if(len(employeeid) > 0):
-                mango_auth.add_admin_in_group(token, group_id, mangoapps_users[str(employeeid.iloc[0])]['id'])
+                all_success = False
+                admin_resp = mango_auth.add_admin_in_group(token, group_id, mangoapps_users[str(employeeid.iloc[0])]['id'])
+                if('ms_response' in admin_resp and 
+                    'conversation' in admin_resp['ms_response'] and 
+                    'id' in admin_resp['ms_response']['conversation'] and 
+                    admin_resp['ms_response']['conversation']['id'] == group_id) or \
+                    ('ms_errors' in admin_resp and 
+                    'error' in admin_resp['ms_errors'] and 
+                    'error_code' in admin_resp['ms_errors']['error'] and 
+                    admin_resp['ms_errors']['error']['error_code'] == 'ALREADY_ADMIN'):
+                    all_success = True
                 time.sleep(2)
+    if(all_success == True or len(team_admins) == 0 or 
+       not team_admins.isna().any() == False):
+        filename = Constants.ALL_MANGO_META_GROUP_ID
+        df_group_mango_meta_id = pd.read_csv(filename)
+        df_group_mango_meta_id.loc[df_group_mango_meta_id['mango_group_id'] == group_id, ['admin']] = ['END']
+        df_group_mango_meta_id.to_csv(filename, index=False)
 
 
 def update_group_meta_mango_id(mango_id, meta_id):
     filename = Constants.ALL_MANGO_META_GROUP_ID
-    file_exists = os.path.exists(filename)
-    with open(filename, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow(['mango_group_id', 'meta_group_id'])
-        writer.writerow([mango_id, meta_id])
+    df_group_mango_meta_id = pd.DataFrame(columns=["mango_group_id", "meta_group_id", "member", "admin", "post"])
+
+    if os.path.exists(filename):
+        df_group_mango_meta_id = pd.read_csv(filename)
+
+    new_row = {
+        'mango_group_id': mango_id,
+        'meta_group_id': meta_id,
+        'member': "START",
+        'admin': "START",
+        'post': "START"
+    }
+    df_group_mango_meta_id = pd.concat([df_group_mango_meta_id, pd.DataFrame([new_row])], ignore_index=True)
+    df_group_mango_meta_id.to_csv(filename, index=False)
     print(f"Added ({mango_id}, {meta_id}) to {filename}")
 
 
@@ -75,44 +107,52 @@ token = mango_auth.get_auth_token_by_api_key()
 mangoapps_users = mango_auth.get_all_users(token)
 print(mangoapps_users)
 
-group_mango_meta_id = {}
+df_group_mango_meta_id = {}
 if os.path.exists(Constants.ALL_MANGO_META_GROUP_ID):
-    df = pd.read_csv(Constants.ALL_MANGO_META_GROUP_ID, usecols=['mango_group_id', 'meta_group_id'])
-    group_mango_meta_id = df.set_index('mango_group_id')['meta_group_id'].to_dict()
+    df_group_mango_meta_id = pd.read_csv(Constants.ALL_MANGO_META_GROUP_ID)
 
 #------ CREATE GROUP ------------
 for index, row in df_all_groups.iterrows():
+    print("----------- GROUP PROCESS START = " + str(index+1) + "/" + str(len(df_all_groups)))
     group_data = row.to_dict()
     group_external_id = group_data['Group Id']
     group_users_employee_ids = get_group_member_employee_ids(group_external_id)
-    mango_group_if_exists = [key for key, value in group_mango_meta_id.items() if value == group_external_id]
+    mango_group_if_exists = {}
+    if(len(df_group_mango_meta_id) > 0):
+        mango_group_if_exists = df_group_mango_meta_id.loc[df_group_mango_meta_id["meta_group_id"] == group_external_id]
     
     group_user_id_list = [str(mangoapps_users[user_employee_id]['id']) for user_employee_id in group_users_employee_ids if user_employee_id in mangoapps_users]
     group_id = ''
-    if(len(mango_group_if_exists) == 0  or 
-       pd.isna(mango_group_if_exists[0]) or 
-       len(mango_group_if_exists) == 0):
+    if(len(mango_group_if_exists) == 0):
         group_data_response = create_group(group_data['GroupName'], group_data['Permission'])
         if (group_data_response and "ms_response" in group_data_response
         and "group" in group_data_response['ms_response']
         and "id" in group_data_response['ms_response']["group"]):
             group_id = group_data_response['ms_response']['group']['id']
             update_group_meta_mango_id(group_id, group_data['Group Id'])
-            group_mango_meta_id[group_id] = group_data['Group Id']
-
+            time.sleep(1)
         else:
             print(f"Error in Group Creation: Name = {group_data['GroupName']}")
             time.sleep(1)
     else:
-        print("Group Already Available ID = " + str(mango_group_if_exists[0]));
-        group_id = mango_group_if_exists[0]
-    time.sleep(1)
+        print("Group Already Available ID = " + str(mango_group_if_exists['mango_group_id'].values[0]));
+        group_id = int(mango_group_if_exists['mango_group_id'].values[0])
+    print("----------- GROUP COMPLETED = " + str(index+1) + "/" + str(len(df_all_groups)))
+    
    
     #----- Update Members
-    add_users_in_group(group_data, group_user_id_list, group_id) 
+    if(len(mango_group_if_exists) == 0 or mango_group_if_exists['member'].values[0] == "START"):
+        add_users_in_group(group_data, group_user_id_list, group_id) 
+        time.sleep(1)
+    else:
+        print("Members Already Added")
     #----- Updated Admins
-    update_admin_group(mangoapps_users, group_external_id, group_id)
-    time.sleep(1)
+    if(len(mango_group_if_exists) == 0 or mango_group_if_exists['admin'].values[0] == "START"):
+        update_admin_group(mangoapps_users, group_external_id, group_id)
+        time.sleep(1)
+    else:
+        print("Admins Already Added")
+    
 
 
 

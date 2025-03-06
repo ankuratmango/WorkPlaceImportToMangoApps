@@ -19,6 +19,7 @@ class Constants():
     MANGOAPPS_API_KEY = 'b670ba431addc6d50f84c89a157e1d58a65aeafc'
     MANGOAPPS_USERNAME = 'admin@ankur.com'
     MANGOAPPS_PASSWORD = 'dGVtcDEyMzQ='
+    MANGOAPPS_PASSWORD_WITHOUTBASE64 = 'temp1234'
 
     # MANGOAPPS_URL = 'https://ankurqa.mangopulse.com/'
     # MANGOAPPS_API_KEY = 'bdc43dc4a8908ae7a2022c3a7873140b03df8dc6'

@@ -1,3 +1,4 @@
+from Constants.constants import Constants
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -7,13 +8,13 @@ import time
 
 driver = webdriver.Chrome()  
 try:
-    driver.get("https://ankurqa.mangopulse.com/ce/pulse/admin/teams/group/all_projects")
+    driver.get(Constants.MANGOAPPS_URL + "/ce/pulse/admin/teams/group/all_projects")
     driver.maximize_window()
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "user_id")))
     username_field = driver.find_element(By.ID, "user_id")
-    username_field.send_keys("admin@ankurqa.com")
+    username_field.send_keys(Constants.MANGOAPPS_USERNAME)
     password_field = driver.find_element(By.ID, "password")
-    password_field.send_keys("temp1234")
+    password_field.send_keys(Constants.MANGOAPPS_PASSWORD_WITHOUTBASE64)
     login_button = driver.find_element(By.CSS_SELECTOR, "button.actionbutton")
     login_button.click()
 

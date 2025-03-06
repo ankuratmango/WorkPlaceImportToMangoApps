@@ -1,6 +1,7 @@
 from asyncio import constants
 import sys
 import os
+from threading import ThreadError
 from Constants.constants import Constants
 import time
 import json
@@ -13,10 +14,10 @@ from urllib.parse import urlparse
 from datetime import datetime
 
 since_date = '31-12-2020'
+since_date = '1-1-2025'
 df_all_users = pd.read_csv(Constants.ALL_USER_DATA)
 df_all_groups = pd.read_csv(Constants.ALL_GROUP_DATA)
 df_group_members = pd.read_csv(Constants.ALL_GROUP_MEMBDER_DATA)
-df_all_group_meta_mango = pd.read_csv(Constants.ALL_MANGO_META_GROUP_ID)
 
 
 mango_meta_groupid = {}
@@ -244,78 +245,75 @@ def update_comment_reply(mango_auth, mango_post, post_id, comments_ids, comment,
          update_comment(mango_auth, mango_post, post_id, comment_reply, comment_resp['ms_response']['comment']['id'])
 
 def update_post(mango_auth, mango_group_id, post, meta_group_id):
-    try:
-        time.sleep(2)
-        message = ""
-        attachment_urls = {}
-        meta_user_id = post['from']['id']
-        message = get_post_message(post)
-        user_token =  get_mango_token(meta_user_id)
-        if(user_token == "NONE" or len(user_token) == 0):
-            print("USER NOT FOUND IN MANGO")
-            return
-        user_email = get_email_by_employee_id(df_all_users, meta_user_id)
-        mango_user_id = mango_email_userid[user_email]
-        attachment_ids = []
-        create_folder(Constants.DOWNLOAD_FOLDER_META)
-        if(post['type'].lower() == "photo"):
-            attachment_urls = get_photo_attachments_urls(post)
-            if(attachment_urls and len(attachment_urls)>0):
-                attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
-            print("Photo Post")
-        elif(post['type'].lower() == "video"):
-            attachment_urls["video"] = post['source']
-            if(attachment_urls and len(attachment_urls)>0):
-                attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
-            print("Video Post")
-        elif(post['type'].lower() == "status"):
-            attachment_urls = get_status_attachments_urls(post)
-            if(attachment_urls and len(attachment_urls)>0):
-                attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
-            print("Status Post")
-        elif(post['type'].lower() == "link"):
-            attachment_urls = get_status_attachments_urls(post)
-            if(len(attachment_urls) > 0):
-                attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
-            print("Link Post")
-        elif(post['type'].lower() == "event"):
-            print("Event Post")
-        elif(post['type'].lower() == "album"):
-            print("Event Album")
+    time.sleep(2)
+    message = ""
+    attachment_urls = {}
+    meta_user_id = post['from']['id']
+    message = get_post_message(post)
+    user_token =  get_mango_token(meta_user_id)
+    if(user_token == "NONE" or len(user_token) == 0):
+        print("USER NOT FOUND IN MANGO")
+        raise Exception("USER NOT FOUND IN MANGO")
+    user_email = get_email_by_employee_id(df_all_users, meta_user_id)
+    mango_user_id = mango_email_userid[user_email]
+    attachment_ids = []
+    create_folder(Constants.DOWNLOAD_FOLDER_META)
+    if(post['type'].lower() == "photo"):
+        attachment_urls = get_photo_attachments_urls(post)
+        if(attachment_urls and len(attachment_urls)>0):
+            attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
+        print("Photo Post")
+    elif(post['type'].lower() == "video"):
+        attachment_urls["video"] = post['source']
+        if(attachment_urls and len(attachment_urls)>0):
+            attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
+        print("Video Post")
+    elif(post['type'].lower() == "status"):
+        attachment_urls = get_status_attachments_urls(post)
+        if(attachment_urls and len(attachment_urls)>0):
+            attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
+        print("Status Post")
+    elif(post['type'].lower() == "link"):
+        attachment_urls = get_status_attachments_urls(post)
+        if(len(attachment_urls) > 0):
+            attachment_ids = get_attachment_ids(attachment_urls, mango_group_id, mango_user_id)
+        print("Link Post")
+    elif(post['type'].lower() == "event"):
+        print("Event Post")
+    elif(post['type'].lower() == "album"):
+        print("Event Album")
 
-        if(is_post_exist(mango_group_id, post, meta_group_id) == True):
-            return
+    if(is_post_exist(mango_group_id, post, meta_group_id) == True):
+        return
 
-        if(len(message) > 0 or len(attachment_ids) > 0):
-            if not message:
-                message = post['type']
-            mango_post = mango_auth.post_feed_in_group(user_token, mango_group_id, message, attachment_ids)
-            post_id = mango_post["ms_response"]['feeds'][0]["id"]
+    if(len(message) > 0 or len(attachment_ids) > 0):
+        if not message:
+            message = post['type']
+        mango_post = mango_auth.post_feed_in_group(user_token, mango_group_id, message, attachment_ids)
+        post_id = mango_post["ms_response"]['feeds'][0]["id"]
             
-            update_into_mapping_feeds(mango_group_id, mango_post, post, meta_group_id);
-            update_post_reaction(mango_auth, post, post_id)
-            comments_ids = {}
-            if('comments' in post and len(post['comments']) > 0):
-                for comment in post['comments']:
-                    if('message' in comment):
-                        comments_ids[comment['id']] =comment['created_time'] 
-                        comment_resp = update_comment(mango_auth, mango_post, post_id, comment)
-                        if('comments' in comment and len(comment['comments']) > 0):
-                            print("Reply In Comments")
-                            update_comment_reply(mango_auth, mango_post, post_id, comments_ids, comment, comment_resp)
-                        time.sleep(2)
-            update_status_to_end(mango_group_id, post_id, post['id'], meta_group_id, comments_ids)
-
-    except Exception as exception:
-        print(exception)
+        update_into_mapping_feeds(mango_group_id, mango_post, post, meta_group_id);
+        update_post_reaction(mango_auth, post, post_id)
+        comments_ids = {}
+        if('comments' in post and len(post['comments']) > 0):
+            for comment in post['comments']:
+                if('message' in comment):
+                    comments_ids[comment['id']] =comment['created_time'] 
+                    comment_resp = update_comment(mango_auth, mango_post, post_id, comment)
+                    if('comments' in comment and len(comment['comments']) > 0):
+                        print("Reply In Comments")
+                        update_comment_reply(mango_auth, mango_post, post_id, comments_ids, comment, comment_resp)
+                    time.sleep(2)
+        update_status_to_end(mango_group_id, post_id, post['id'], meta_group_id, comments_ids)
 
 
-with open(Constants.ALL_MANGO_META_GROUP_ID, mode='r') as file:
-    reader = csv.reader(file)
-    next(reader)
+
+with open(Constants.ALL_MANGO_META_GROUP_ID, mode='r', newline='', encoding='utf-8') as file:
+    reader = csv.DictReader(file)  
     for row in reader:
-        key, value = row
-        mango_meta_groupid[value] = key
+        mango_group_id = row['mango_group_id']
+        meta_group_id = row['meta_group_id']
+        mango_meta_groupid[meta_group_id] = mango_group_id
 
 with open(Constants.ALL_MANGO_USER_ID_PSWD, mode='r') as file:
     reader = csv.reader(file)
@@ -326,18 +324,35 @@ with open(Constants.ALL_MANGO_USER_ID_PSWD, mode='r') as file:
 
 
 os.makedirs(Constants.FOLDER_GROUPFEEDS, exist_ok=True)
-for index, row in df_all_groups.iterrows():
-    data = row.to_dict()
-    print(data)
-    group_data = group_posts_detail.getGroupData(Constants.META_ACCESS_TOKEN, str(data['Group Id']))
-    posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, since_date)
-    mango_group_id = mango_meta_groupid[str(data['Group Id'])]
-    meta_group_id = str(data['Group Id'])
-    for post in reversed(posts):
-        try:
-            update_post(mango_auth, mango_group_id, post, meta_group_id)
-        except Exception as exception:
-            print(exception)
+df_group_mango_meta_id = {}
+if os.path.exists(Constants.ALL_MANGO_META_GROUP_ID):
+    df_group_mango_meta_id = pd.read_csv(Constants.ALL_MANGO_META_GROUP_ID)
+    for index, row in df_all_groups.iterrows():
+        data = row.to_dict()
+        mango_group_if_exists = df_group_mango_meta_id.loc[df_group_mango_meta_id["meta_group_id"] == data['Group Id']]
+        if(mango_group_if_exists['post'].values[0] == "START"):
+            print(data)
+            group_data = group_posts_detail.getGroupData(Constants.META_ACCESS_TOKEN, str(data['Group Id']))
+            posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, since_date)
+            mango_group_id = mango_meta_groupid[str(data['Group Id'])]
+            meta_group_id = str(data['Group Id'])
+            all_post_updated = True
+            for post in reversed(posts):
+                try:
+                    update_post(mango_auth, mango_group_id, post, meta_group_id)
+                except Exception as exception:
+                    all_post_updated = False
+                    print(exception)
+                    break
+            if(all_post_updated == True):
+                filename = Constants.ALL_MANGO_META_GROUP_ID
+                df_group_mango_meta_id = pd.read_csv(filename)
+                df_group_mango_meta_id.loc[df_group_mango_meta_id['mango_group_id'] == int(mango_group_id), ['post']] = ['END']
+                df_group_mango_meta_id.to_csv(filename, index=False)
+        else:
+            print("#-------------POSTS ALREADY CREATED--------------")
+else:
+    print("#-------------PLEASE CREATE GROUPS FIRST--------------")
 
 
     
