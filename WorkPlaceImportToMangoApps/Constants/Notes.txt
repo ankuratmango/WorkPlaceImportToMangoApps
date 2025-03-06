@@ -16,9 +16,9 @@
 
 ---- PENDING ITEMS
 1) Attachements 
-2) Reaction on Comments
+2) Reaction/Nested on Comments
 3) Need full access key 
-
+4) Attachements in comments
 
 
 ----- Process ---------
@@ -56,3 +56,6 @@ If two groups have the same name, add "_1" or "_1_2" at the end of the group nam
 Add members to groups using the API.
 Update admin roles using the API.
 Getting admin roles detail in group data.
+
+------- Issue
+not getting updated at time of comments but post time update if we edit comment

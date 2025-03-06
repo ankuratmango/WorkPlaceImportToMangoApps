@@ -65,7 +65,7 @@ def get_mango_token(meta_user_id):
 
 token = mango_auth.get_auth_token_by_api_key()
 
-def update_comment(mango_auth, mango_post, post_id, comment):
+def update_comment(mango_auth, mango_post, post_id, comment, parent_id = 0):
     comment_message = comment['message']
     if(len(comment_message) > 0):
         comment_user_id = comment['from']['id']
@@ -74,10 +74,10 @@ def update_comment(mango_auth, mango_post, post_id, comment):
                            mango_post["ms_response"]['feeds'][0] and
                            mango_post["ms_response"]['feeds'][0]["id"]):
             user_token = get_mango_token(comment_user_id)
-            mango_auth.post_comment(user_token, post_id, comment_message)
             print("Comment Updated = " + str(comment_message))
+            return mango_auth.post_comment(user_token, post_id, comment_message, parent_id)
+            
         
-
 def update_reaction_post(mango_auth, post_id, reaction):
     reaction_user_id = reaction['id']
     reaction_type = reaction['type']
@@ -181,7 +181,7 @@ def update_into_mapping_feeds(mango_group_id, mango_post, post, meta_group_id):
     group_feeds_file_name = str(mango_group_id) + "_" + str(meta_group_id) + ".csv"
     group_feeds_file_path = os.path.join(Constants.FOLDER_GROUPFEEDS, group_feeds_file_name)
 
-    df_group_mango_meta_feed_id = pd.DataFrame(columns=["mango_id", "meta_id", "mango_time", "meta_time", "status"])
+    df_group_mango_meta_feed_id = pd.DataFrame(columns=["mango_id", "meta_id", "mango_time", "meta_time", "status","comments"])
 
     if os.path.exists(group_feeds_file_path):
         df_group_mango_meta_feed_id = pd.read_csv(group_feeds_file_path)
@@ -201,11 +201,11 @@ def update_into_mapping_feeds(mango_group_id, mango_post, post, meta_group_id):
     df_group_mango_meta_feed_id = pd.concat([df_group_mango_meta_feed_id, pd.DataFrame([new_row])], ignore_index=True)
     df_group_mango_meta_feed_id.to_csv(group_feeds_file_path, index=False)
 
-def update_status_to_end(mango_group_id, mango_id, meta_id, meta_group_id):
+def update_status_to_end(mango_group_id, mango_id, meta_id, meta_group_id, comments_ids):
     group_feeds_file_name = str(mango_group_id) + "_" + str(meta_group_id) + ".csv"
     group_feeds_file_path = os.path.join(Constants.FOLDER_GROUPFEEDS, group_feeds_file_name)
     df_group_mango_meta_feed_id = pd.read_csv(group_feeds_file_path)
-    df_group_mango_meta_feed_id.loc[df_group_mango_meta_feed_id['mango_id'] == mango_id, ['status']] = ['END']
+    df_group_mango_meta_feed_id.loc[df_group_mango_meta_feed_id['mango_id'] == mango_id, ['status', 'comments']] = ['END', json.dumps(comments_ids)]
     df_group_mango_meta_feed_id.to_csv(group_feeds_file_path, index=False)
     print(f"Status updated to 'end' for Mango ID {mango_id}.")
 
@@ -216,22 +216,32 @@ def is_post_exist(mango_group_id, post, meta_group_id):
     group_feeds_file_path = os.path.join(Constants.FOLDER_GROUPFEEDS, group_feeds_file_name)
     if os.path.exists(group_feeds_file_path):
         df_group_mango_meta_feed_id = pd.read_csv(group_feeds_file_path)
-
-    if meta_id in df_group_mango_meta_feed_id['meta_id'].values:
-        row = df_group_mango_meta_feed_id.loc[df_group_mango_meta_feed_id["meta_id"] == meta_id]
-        status_value = row["status"].values[0] if not row.empty else None
-        meta_post_time_last = datetime.strptime(row["meta_time"].values[0], "%Y-%m-%dT%H:%M:%S%z")
-        meta_post_time_latest = datetime.strptime(post["updated_time"], "%Y-%m-%dT%H:%M:%S%z")
-        if(status_value == "END"):
-            return True
-        if(status_value == "START" or meta_post_time_latest != meta_post_time_last):
-            #Mango Feed Delete Code
-            mango_id =  row["mango_id"].values[0]
-            user_token = get_mango_token(meta_user_id)
-            mango_auth.delete_post(user_token, mango_id, mango_group_id)
-            df_group_mango_meta_feed_id = df_group_mango_meta_feed_id[df_group_mango_meta_feed_id["meta_id"] != meta_id] 
-            df_group_mango_meta_feed_id.to_csv(group_feeds_file_path, index=False)
+        if meta_id in df_group_mango_meta_feed_id['meta_id'].values:
+            row = df_group_mango_meta_feed_id.loc[df_group_mango_meta_feed_id["meta_id"] == meta_id]
+            status_value = row["status"].values[0] if not row.empty else None
+            meta_post_time_last = datetime.fromisoformat(row["meta_time"].values[0])
+            meta_post_time_latest = datetime.strptime(post["updated_time"], "%Y-%m-%dT%H:%M:%S%z")
+            if(status_value == "START" or meta_post_time_latest != meta_post_time_last):
+                #Mango Feed Delete Code
+                mango_id =  row["mango_id"].values[0]
+                user_token = get_mango_token(meta_user_id)
+                mango_auth.delete_post(user_token, mango_id, mango_group_id)
+                df_group_mango_meta_feed_id = df_group_mango_meta_feed_id[df_group_mango_meta_feed_id["meta_id"] != meta_id] 
+                df_group_mango_meta_feed_id.to_csv(group_feeds_file_path, index=False)
+            if(status_value == "END"):
+                return True
     return False
+
+def update_post_reaction(mango_auth, post, post_id):
+    if('reactions' in post and len(post['reactions']) > 0):
+        for reaction in post['reactions']:
+            update_reaction_post(mango_auth, post_id, reaction)
+            time.sleep(2)
+
+def update_comment_reply(mango_auth, mango_post, post_id, comments_ids, comment, comment_resp):
+    for comment_reply in comment['comments']['data']:
+         comments_ids[comment_reply['id']] = comment_reply['created_time'] 
+         update_comment(mango_auth, mango_post, post_id, comment_reply, comment_resp['ms_response']['comment']['id'])
 
 def update_post(mango_auth, mango_group_id, post, meta_group_id):
     try:
@@ -273,7 +283,6 @@ def update_post(mango_auth, mango_group_id, post, meta_group_id):
         elif(post['type'].lower() == "album"):
             print("Event Album")
 
-
         if(is_post_exist(mango_group_id, post, meta_group_id) == True):
             return
 
@@ -284,23 +293,23 @@ def update_post(mango_auth, mango_group_id, post, meta_group_id):
             post_id = mango_post["ms_response"]['feeds'][0]["id"]
             
             update_into_mapping_feeds(mango_group_id, mango_post, post, meta_group_id);
-    
-            if('reactions' in post and len(post['reactions']) > 0):
-                for reaction in post['reactions']:
-                    update_reaction_post(mango_auth, post_id, reaction)
-                    time.sleep(2)
+            update_post_reaction(mango_auth, post, post_id)
+            comments_ids = {}
             if('comments' in post and len(post['comments']) > 0):
                 for comment in post['comments']:
                     if('message' in comment):
-                        update_comment(mango_auth, mango_post, post_id, comment)
+                        comments_ids[comment['id']] =comment['created_time'] 
+                        comment_resp = update_comment(mango_auth, mango_post, post_id, comment)
+                        if('comments' in comment and len(comment['comments']) > 0):
+                            print("Reply In Comments")
+                            update_comment_reply(mango_auth, mango_post, post_id, comments_ids, comment, comment_resp)
                         time.sleep(2)
-            update_status_to_end(mango_group_id, post_id, post['id'], meta_group_id)
+            update_status_to_end(mango_group_id, post_id, post['id'], meta_group_id, comments_ids)
 
     except Exception as exception:
         print(exception)
 
 
-# Open the file in read mode
 with open(Constants.ALL_MANGO_META_GROUP_ID, mode='r') as file:
     reader = csv.reader(file)
     next(reader)
@@ -308,7 +317,6 @@ with open(Constants.ALL_MANGO_META_GROUP_ID, mode='r') as file:
         key, value = row
         mango_meta_groupid[value] = key
 
-# Open the file in read mode
 with open(Constants.ALL_MANGO_USER_ID_PSWD, mode='r') as file:
     reader = csv.reader(file)
     next(reader)
@@ -318,7 +326,6 @@ with open(Constants.ALL_MANGO_USER_ID_PSWD, mode='r') as file:
 
 
 os.makedirs(Constants.FOLDER_GROUPFEEDS, exist_ok=True)
-
 for index, row in df_all_groups.iterrows():
     data = row.to_dict()
     print(data)
@@ -328,7 +335,6 @@ for index, row in df_all_groups.iterrows():
     meta_group_id = str(data['Group Id'])
     for post in reversed(posts):
         try:
-            #if('attachment' in post and len(post['attachment']) > 0):#for testing
             update_post(mango_auth, mango_group_id, post, meta_group_id)
         except Exception as exception:
             print(exception)

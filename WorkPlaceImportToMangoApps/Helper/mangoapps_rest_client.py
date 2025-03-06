@@ -246,18 +246,24 @@ class MangoAuth:
         parsed_data = json.loads(response.content.decode("utf-8"))
         return parsed_data
 
-    def post_comment(self, token, feed_id, comment):
-        payload = json.dumps({
-          "ms_request": {
-            "comment": {
-              "body": comment
+    def post_comment(self, token, feed_id, comment, parent_id):
+        payload = {
+            "ms_request": {
+                "comment": {
+                    "body": comment
+                }
             }
-          }
-        })
+        }
+
+        if parent_id > 0:
+            payload["ms_request"]["comment"]["parent_id"] = str(parent_id)
+
         headers = {
           'Content-Type': 'application/json',
           'Cookie': "_felix_session_id=" + token,
         }
+
+        payload = json.dumps(payload)
 
         response = self.api_client.post(
             "/api/feeds/" + str(feed_id) + "/comment.json",
@@ -267,6 +273,7 @@ class MangoAuth:
         print("FEED COMMENT REQUEST = " + payload)
         parsed_data = json.loads(response.content.decode("utf-8"))
         print(response.text)
+        return parsed_data
 
 
     def post_reaction(self, token, feed_id, reaction):

@@ -27,8 +27,8 @@ POST_FIELDS = (
     'attachments{media,type,url,title,description,subattachments}'
 )
 POST_COMMENT_FIELDS = (
-    'id,from,reactions,updated_time,type,message,source,story,properties,permalink_url,'
-    'attachments{media,type,url,title,description,subattachments}'
+    'id,from,reactions,updated_time,created_time,type,message,source,story,properties,permalink_url,'
+    'attachments{media,type,url,title,description,subattachments},comments{message,from,created_time,updated_time}'
 )
 JSON_KEY_DATA = 'data'
 JSON_KEY_PAGING = 'paging'
