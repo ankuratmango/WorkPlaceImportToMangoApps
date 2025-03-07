@@ -311,7 +311,38 @@ def check_date(last_date, current_date):
         return True
     return False
 
+def update_post_group_time(mango_group_id, current_date, all_post_updated):
+    if(all_post_updated == True):
+        filename = Constants.ALL_MANGO_META_GROUP_ID
+        df_group_mango_meta_id = pd.read_csv(filename)
+        df_group_mango_meta_id.loc[df_group_mango_meta_id['mango_group_id'] == int(mango_group_id), ['post']] = [current_date.strftime("%d-%m-%Y")]
+        df_group_mango_meta_id.to_csv(filename, index=False)
 
+def check_update_post(mango_auth, update_post, mango_group_id, meta_group_id, posts):
+    all_post_updated = True
+    for post in reversed(posts):
+        try:
+            update_post(mango_auth, mango_group_id, post, meta_group_id)
+        except Exception as exception:
+            all_post_updated = False
+            print(exception)
+            break
+    return all_post_updated
+
+def start_update_post(mango_meta_groupid, mango_auth, update_post, check_date, update_post_group_time, check_update_post, data, data_days_per_batch, current_date, mango_group_if_exists):
+    if(mango_group_if_exists['post'].values[0] == "START" or 
+                    check_date(mango_group_if_exists['post'].values[0], current_date)):
+        print(data)
+        group_data = group_posts_detail.getGroupData(Constants.META_ACCESS_TOKEN, str(data['Group Id']))
+        posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, 
+                            current_date.strftime("%d-%m-%Y"), 
+                            (current_date + timedelta(days=data_days_per_batch)).strftime("%d-%m-%Y"))
+        mango_group_id = mango_meta_groupid[str(data['Group Id'])]
+        meta_group_id = str(data['Group Id'])
+        all_post_updated = check_update_post(mango_auth, update_post, mango_group_id, meta_group_id, posts)
+        update_post_group_time(mango_group_id, current_date, all_post_updated)
+    else:
+        print("#-------------POSTS ALREADY CREATED--------------")
 
 with open(Constants.ALL_MANGO_META_GROUP_ID, mode='r', newline='', encoding='utf-8') as file:
     reader = csv.DictReader(file)  
@@ -355,6 +386,7 @@ ignore_list =[1003604680845459, 683794266600340, 693066472569014,
 
 os.makedirs(Constants.FOLDER_GROUPFEEDS, exist_ok=True)
 df_group_mango_meta_id = {}
+
 if os.path.exists(Constants.ALL_MANGO_META_GROUP_ID):
     df_group_mango_meta_id = pd.read_csv(Constants.ALL_MANGO_META_GROUP_ID)
     current_date = since_date
@@ -364,30 +396,7 @@ if os.path.exists(Constants.ALL_MANGO_META_GROUP_ID):
             data = row.to_dict()
             mango_group_if_exists = df_group_mango_meta_id.loc[df_group_mango_meta_id["meta_group_id"] == data['Group Id']]
             if(data['Group Id'] not in ignore_list):
-                if(mango_group_if_exists['post'].values[0] == "START" or 
-                    check_date(mango_group_if_exists['post'].values[0], current_date)):
-                    print(data)
-                    group_data = group_posts_detail.getGroupData(Constants.META_ACCESS_TOKEN, str(data['Group Id']))
-                    posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, 
-                            current_date.strftime("%d-%m-%Y"), 
-                            (current_date + timedelta(days=data_days_per_batch)).strftime("%d-%m-%Y"))
-                    mango_group_id = mango_meta_groupid[str(data['Group Id'])]
-                    meta_group_id = str(data['Group Id'])
-                    all_post_updated = True
-                    for post in reversed(posts):
-                        try:
-                            update_post(mango_auth, mango_group_id, post, meta_group_id)
-                        except Exception as exception:
-                            all_post_updated = False
-                            print(exception)
-                            break
-                    if(all_post_updated == True):
-                        filename = Constants.ALL_MANGO_META_GROUP_ID
-                        df_group_mango_meta_id = pd.read_csv(filename)
-                        df_group_mango_meta_id.loc[df_group_mango_meta_id['mango_group_id'] == int(mango_group_id), ['post']] = [current_date.strftime("%d-%m-%Y")]
-                        df_group_mango_meta_id.to_csv(filename, index=False)
-                else:
-                    print("#-------------POSTS ALREADY CREATED--------------")
+                start_update_post(mango_meta_groupid, mango_auth, update_post, check_date, update_post_group_time, check_update_post, data, data_days_per_batch, current_date, mango_group_if_exists)
             else:
                 print("#-------------GROUP IN IGNORE LIST--------------")
         current_date += timedelta(days=data_days_per_batch)
