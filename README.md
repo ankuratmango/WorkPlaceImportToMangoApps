@@ -19,6 +19,7 @@ Migration Details
 - EmployeeID
 - Phone
 - Title
+- If the Email ID of the Meta user is not available, use the Meta Employee ID.
 
 **Groups** - All groups are created by a single ADMIN user(MangoApps API Key) and this ADMIN user will be a part of the groups.
 - Create groups using the API with the same name.
