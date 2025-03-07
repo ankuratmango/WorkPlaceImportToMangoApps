@@ -64,7 +64,3 @@ if we want data from 15 jan 2025 and any feed we created 14 Jan 2025 and if we u
 16 jan 2025 still that data not coming..
 
 
-
-------------- Need Server Help
-- If we get API to bulk update chats so no need to access server that script can run from outside
-- 

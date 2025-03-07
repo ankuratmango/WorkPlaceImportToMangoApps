@@ -78,7 +78,7 @@ def update_admin_group(mangoapps_users, group_external_id, group_id):
 
 def update_group_meta_mango_id(mango_id, meta_id):
     filename = Constants.ALL_MANGO_META_GROUP_ID
-    df_group_mango_meta_id = pd.DataFrame(columns=["mango_group_id", "meta_group_id", "member", "admin", "post"])
+    df_group_mango_meta_id = pd.DataFrame(columns=["mango_group_id", "meta_group_id", "member", "admin", "post", "chat"])
 
     if os.path.exists(filename):
         df_group_mango_meta_id = pd.read_csv(filename)
@@ -88,7 +88,8 @@ def update_group_meta_mango_id(mango_id, meta_id):
         'meta_group_id': meta_id,
         'member': "START",
         'admin': "START",
-        'post': "START"
+        'post': "START",
+        'chat': "START"
     }
     df_group_mango_meta_id = pd.concat([df_group_mango_meta_id, pd.DataFrame([new_row])], ignore_index=True)
     df_group_mango_meta_id.to_csv(filename, index=False)
