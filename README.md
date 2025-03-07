@@ -11,7 +11,9 @@ This project aims to migrate data from META Workplace to MangoApps using their r
 - Chats
 
 Migration Details
+
 **Users**
+
 Users will be extracted from META Workplace and added to MangoApps with the following fields:
 - Firstname
 - Lastname
