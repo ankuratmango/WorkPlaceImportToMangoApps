@@ -14,8 +14,6 @@ from urllib.parse import urlparse
 from datetime import datetime
 
 #since_date = '31-12-2020'
-since_date = '1-1-2025'
-until_date = '16-1-2025'
 df_all_users = pd.read_csv(Constants.ALL_USER_DATA)
 df_all_groups = pd.read_csv(Constants.ALL_GROUP_DATA)
 df_group_members = pd.read_csv(Constants.ALL_GROUP_MEMBDER_DATA)
@@ -323,6 +321,11 @@ with open(Constants.ALL_MANGO_USER_ID_PSWD, mode='r') as file:
         key, value = row
         mango_user_id_pswd[key] = value
 
+with open(Constants.SINCE_UNTIL_DATE_FILE, "r") as file:
+    data = json.load(file)
+
+since_date = data["since_date"]
+until_date = data["until_date"]
 
 os.makedirs(Constants.FOLDER_GROUPFEEDS, exist_ok=True)
 df_group_mango_meta_id = {}

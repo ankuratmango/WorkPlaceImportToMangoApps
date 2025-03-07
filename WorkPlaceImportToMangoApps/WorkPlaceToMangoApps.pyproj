@@ -37,6 +37,7 @@
     <Compile Include="Helper\rest_client.py" />
     <Compile Include="Helper\scim_agent.py" />
     <Compile Include="Helper\scim_sdk.py" />
+    <Compile Include="update_messages.py" />
     <Compile Include="update_group_data.py" />
     <Compile Include="Helper\workplace_etl_pipeline_xmlink.py" />
     <Compile Include="update_post_comment_time.py" />

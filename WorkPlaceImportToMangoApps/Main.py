@@ -179,11 +179,11 @@ def exportToFile(category_data, cid, cname):
     f.write(json.dumps(category_data))
     f.close()
 
-## START
-all_categories = groups_categories.elt_main_categories(Constants.META_ACCESS_TOKEN, days);
-#category_id = '371425217800259'
-#category_id = '337195997889848'
-for item in all_categories:
-    category_data = export_kl_category.getCategoryDataById(Constants.META_ACCESS_TOKEN, item['id'])
-    print (category_data)
-    exportToFile(category_data, item['id'], item['title'])
+# ## START all_categories
+# all_categories = groups_categories.elt_main_categories(Constants.META_ACCESS_TOKEN, days);
+# #category_id = '371425217800259'
+# #category_id = '337195997889848'
+# for item in all_categories:
+#     category_data = export_kl_category.getCategoryDataById(Constants.META_ACCESS_TOKEN, item['id'])
+#     print (category_data)
+#     exportToFile(category_data, item['id'], item['title'])

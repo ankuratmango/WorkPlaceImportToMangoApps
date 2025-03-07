@@ -33,6 +33,7 @@ class Constants():
     FOLDER_GROUPFEEDS = current_directory + "\\importdata\\groupfeeds"
 
     DOWNLOAD_FOLDER_META = current_directory + "\\download_file_meta"
+    SINCE_UNTIL_DATE_FILE = current_directory+ "\\importdata\\since_until_date.txt"
 
 
 
