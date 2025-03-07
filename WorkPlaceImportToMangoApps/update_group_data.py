@@ -334,6 +334,25 @@ since_date = datetime.strptime(data["since_date"], "%d-%m-%Y")
 until_date = datetime.strptime(data["until_date"], "%d-%m-%Y")
 data_days_per_batch = 1
 
+#ignore_list = [1412403309212934, 2670655749898255]
+#588447323888985, 1225491695279351,
+ignore_list =[1003604680845459, 683794266600340, 693066472569014,
+              3327576334156870, 855859935739661, 597681658792497, 680334146840275, 5961593197218391,
+              927969741512288, 785900265831538, 470044731622027, 475179687979778, 883971562766228,
+              3361835327382053, 465829044982370, 578988933803141, 737344630839806, 1412403309212934,
+              1092471317986828, 444173807262481, 341853227750658, 239493118058165, 4597040463713861,
+              2973005242954446, 405647357782615, 3170810336475591, 251904703414647, 671087450520603,
+              972066943349971, 579208649955210, 270565461634046, 1045361812923418, 1220285855138416,
+              4188813607913301, 3076519192593863, 3044345382487242, 3032934566959686, 1343383429410872,
+              1245285202653823, 952887398628237, 914627555821561, 905556720339568, 883450445891390,
+              881772592732873, 590631238739212, 568480764401998, 566290881349355, 537015447372925,
+              371236531339462, 369807448215317, 340440071199285, 300636434727029, 289599869359783,
+              220356160156428, 193648072852213, 171040701825965, 156779166649498, 152287970426641,
+              132693762381068, 2670655749898255, 942124976570122, 568097734356556, 918451118737434,
+              566030357901986, 500380054367287, 419163799575496, 717456189490594, 422599323417581,
+              3280955308887569, 1133089240698702, 501525465189407, 1689101334822009, 431671232299688,
+              405522091450195, 804988427045390]
+
 os.makedirs(Constants.FOLDER_GROUPFEEDS, exist_ok=True)
 df_group_mango_meta_id = {}
 if os.path.exists(Constants.ALL_MANGO_META_GROUP_ID):
@@ -344,31 +363,34 @@ if os.path.exists(Constants.ALL_MANGO_META_GROUP_ID):
         for index, row in df_all_groups.iterrows():
             data = row.to_dict()
             mango_group_if_exists = df_group_mango_meta_id.loc[df_group_mango_meta_id["meta_group_id"] == data['Group Id']]
-            if(mango_group_if_exists['post'].values[0] == "START" or 
-               check_date(mango_group_if_exists['post'].values[0], current_date)):
-                print(data)
-                group_data = group_posts_detail.getGroupData(Constants.META_ACCESS_TOKEN, str(data['Group Id']))
-                posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, 
-                        current_date.strftime("%d-%m-%Y"), 
-                        (current_date + timedelta(days=data_days_per_batch)).strftime("%d-%m-%Y"))
-                mango_group_id = mango_meta_groupid[str(data['Group Id'])]
-                meta_group_id = str(data['Group Id'])
-                all_post_updated = True
-                for post in reversed(posts):
-                    try:
-                        update_post(mango_auth, mango_group_id, post, meta_group_id)
-                    except Exception as exception:
-                        all_post_updated = False
-                        print(exception)
-                        break
-                if(all_post_updated == True):
-                    filename = Constants.ALL_MANGO_META_GROUP_ID
-                    df_group_mango_meta_id = pd.read_csv(filename)
-                    df_group_mango_meta_id.loc[df_group_mango_meta_id['mango_group_id'] == int(mango_group_id), ['post']] = [current_date.strftime("%d-%m-%Y")]
-                    df_group_mango_meta_id.to_csv(filename, index=False)
+            if(data['Group Id'] not in ignore_list):
+                if(mango_group_if_exists['post'].values[0] == "START" or 
+                    check_date(mango_group_if_exists['post'].values[0], current_date)):
+                    print(data)
+                    group_data = group_posts_detail.getGroupData(Constants.META_ACCESS_TOKEN, str(data['Group Id']))
+                    posts = group_posts_detail.processGroupPosts(Constants.META_ACCESS_TOKEN, group_data, 
+                            current_date.strftime("%d-%m-%Y"), 
+                            (current_date + timedelta(days=data_days_per_batch)).strftime("%d-%m-%Y"))
+                    mango_group_id = mango_meta_groupid[str(data['Group Id'])]
+                    meta_group_id = str(data['Group Id'])
+                    all_post_updated = True
+                    for post in reversed(posts):
+                        try:
+                            update_post(mango_auth, mango_group_id, post, meta_group_id)
+                        except Exception as exception:
+                            all_post_updated = False
+                            print(exception)
+                            break
+                    if(all_post_updated == True):
+                        filename = Constants.ALL_MANGO_META_GROUP_ID
+                        df_group_mango_meta_id = pd.read_csv(filename)
+                        df_group_mango_meta_id.loc[df_group_mango_meta_id['mango_group_id'] == int(mango_group_id), ['post']] = [current_date.strftime("%d-%m-%Y")]
+                        df_group_mango_meta_id.to_csv(filename, index=False)
+                else:
+                    print("#-------------POSTS ALREADY CREATED--------------")
             else:
-                print("#-------------POSTS ALREADY CREATED--------------")
-            current_date += timedelta(days=data_days_per_batch)
+                print("#-------------GROUP IN IGNORE LIST--------------")
+        current_date += timedelta(days=data_days_per_batch)
 else:
     print("#-------------PLEASE CREATE GROUPS FIRST--------------")
 
